@@ -182,6 +182,7 @@ footer p{font-size:10px;color:var(--text3);font-family:var(--mono);}
     <div class="hero-badge">💎 가족 총 금융자산</div>
     <div class="hero-val" id="hero-val"><span class="spin"></span></div>
     <div class="hero-sub" id="hero-sub">국내 · 미국 · 연금 · ISA · 한정자산 · 자녀</div>
+    <div id="gold-status" style="font-family:var(--mono);font-size:10px;color:#6878a8;margin-top:6px;"></div>
     <div class="ratio-bar" id="ratio-bar"></div>
   </div>
 
@@ -294,7 +295,7 @@ footer p{font-size:10px;color:var(--text3);font-family:var(--mono);}
         <div class="cat-name">한정자산</div>
         <div class="cat-tag">가상자산 · 골드</div>
         <div class="cat-val" id="cv-lim"><span class="spin"></span></div>
-        <div class="cat-sub">실시간 시세</div>
+        <div class="cat-sub" id="lim-gold-sub">실시간 시세</div>
         <div class="cat-pct-bar"><div class="cat-pct-fill" id="pb-lim" style="background:var(--c-lim);width:0%"></div></div>
         <div class="cat-arrow">→</div>
       </a>
@@ -395,9 +396,8 @@ const FIXED = {
   wm_usd_cash: 6.14, wm_krw_cash: 354144,
   gf_usd_cash: 7.73,
   // 골드 (수기 입력)
-  gold_g_price: 0, // 수기 입력 필요
-  goldbar_g: 215.65,
-  krx_gold_g: 7,
+  goldbar_g: 215.65, // 골드바 보유 그램
+  krx_gold_g: 7,      // KRX금현물 계좌 그램
 };
 
 // ── 보유 종목 ──
@@ -420,6 +420,19 @@ function calcPortVal(holdings, prices, usdkrw){
 }
 
 async function loadAll(){
+  // 금 시세 상태 표시
+  const goldStatusEl = document.getElementById('gold-status');
+  const savedGold = localStorage.getItem('gold_price_per_g');
+  const savedGoldAt = localStorage.getItem('gold_price_updated');
+  if(goldStatusEl){
+    if(savedGold && parseFloat(savedGold)>0){
+      goldStatusEl.textContent = '🪙 금 시세 '+parseInt(savedGold).toLocaleString()+'원/g ('+savedGoldAt+') · 한정자산 페이지에서 업데이트';
+      goldStatusEl.style.color='#ffd166';
+    } else {
+      goldStatusEl.textContent = '⚠️ 금 시세 미입력 · 한정자산 페이지에서 입력하면 총자산에 자동 반영';
+      goldStatusEl.style.color='#ff6b8a';
+    }
+  }
   const [prices, crypto] = await Promise.all([
     fetchPrices(ALL_TICKERS),
     fetchCrypto(),
@@ -437,7 +450,9 @@ async function loadAll(){
   const eth_val = crypto.eth ? crypto.eth*2 : 0;
   const sol_val = crypto.sol ? crypto.sol*60 : 0;
   const crypto_val = btc_val+eth_val+sol_val;
-  const gold_val = FIXED.gold_g_price*(FIXED.goldbar_g+FIXED.krx_gold_g);
+  // localStorage에서 금 시세 읽기
+  const savedGoldPrice = parseFloat(localStorage.getItem('gold_price_per_g')||'0');
+  const gold_val = savedGoldPrice*(FIXED.goldbar_g+FIXED.krx_gold_g);
   const lim_val  = crypto_val+gold_val;
 
   // ISA
@@ -477,6 +492,17 @@ async function loadAll(){
     ['dom',dom_val],['us',us_val],['pen',pen_val],
     ['isa',isa_val],['lim',lim_val],['kid',kid_val]
   ];
+  // 한정자산 카드에 금 시세 반영 여부 표시
+  const limSubEl = document.getElementById('lim-gold-sub');
+  if(limSubEl){
+    if(savedGold && parseFloat(savedGold)>0){
+      limSubEl.textContent = '🪙 금 '+parseInt(savedGold).toLocaleString()+'원/g · 가상자산 실시간';
+    } else {
+      limSubEl.textContent = '⚠️ 금 시세 미입력 · 가상자산 실시간';
+      limSubEl.style.color='#ff6b8a';
+    }
+  }
+
   cats.forEach(([k,v])=>{
     const el=document.getElementById('cv-'+k);
     if(el) el.textContent=fmtW(v);

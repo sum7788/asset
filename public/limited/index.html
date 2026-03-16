@@ -127,11 +127,12 @@ footer p{font-size:10px;color:var(--text3);font-family:var(--mono);}
     <div class="sum-card"><div class="sum-label">🔐 가상자산 합계</div><div class="sum-val" id="sv-crypto"><span class="spin"></span></div><div class="sum-sub">BTC + ETH + SOL</div></div>
     <div class="sum-card"><div class="sum-label">🪙 금 시세 (g당)</div>
       <div style="display:flex;align-items:center;gap:6px;margin:6px 0;">
-        <input id="gold-input" type="number" placeholder="예: 156000" 
+        <input id="gold-input" type="text" placeholder="예: 156,000" 
           style="font-family:var(--mono);font-size:14px;font-weight:700;background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:6px 10px;border-radius:8px;width:100%;outline:none;"
           oninput="onGoldInput()">
       </div>
-      <div style="font-family:var(--mono);font-size:9px;color:var(--text3);">네이버 검색 후 직접 입력</div>
+      <div id="gold-saved-badge" style="font-family:var(--mono);font-size:9px;margin-top:2px;"></div>
+      <div style="font-family:var(--mono);font-size:9px;color:var(--text3);">네이버 검색 후 입력 → 자동 저장</div>
     </div>
   </div>
 
@@ -267,6 +268,15 @@ const BTC_QTY=0.91746, ETH_QTY=2, SOL_QTY=60, GOLDBAR_G=215.65, KRX_G=7;
 function onGoldInput(){
   const v=parseFloat(document.getElementById('gold-input').value.replace(/,/g,''))||0;
   goldPrice=v;
+  // localStorage에 저장
+  if(v>0){
+    localStorage.setItem('gold_price_per_g', v);
+    localStorage.setItem('gold_price_updated', new Date().toLocaleString('ko-KR',{timeZone:'Asia/Seoul'}));
+    document.getElementById('gold-saved-badge').textContent='✅ 저장됨 · 총자산에 반영';
+    document.getElementById('gold-saved-badge').style.color='#4ade80';
+  } else {
+    document.getElementById('gold-saved-badge').textContent='';
+  }
   const gbar=v*GOLDBAR_G, gkrx=v*KRX_G, gtot=gbar+gkrx;
   document.getElementById('gold-price-disp').textContent=v?fmtFull(v)+'/g':'입력 대기중';
   document.getElementById('gold-price-disp2').textContent=v?fmtFull(v)+'/g':'입력 대기중';
@@ -274,6 +284,26 @@ function onGoldInput(){
   document.getElementById('v-krxgold').textContent=v?fmtW(gkrx):'—';
   document.getElementById('sv-gold').textContent=v?fmtW(gtot):'입력 필요';
   updateTotal(gtot);
+}
+
+// 페이지 로드 시 저장된 값 복원
+function restoreGoldPrice(){
+  const saved=localStorage.getItem('gold_price_per_g');
+  const savedAt=localStorage.getItem('gold_price_updated');
+  if(saved){
+    const v=parseFloat(saved);
+    document.getElementById('gold-input').value=Math.round(v).toLocaleString();
+    goldPrice=v;
+    const gbar=v*GOLDBAR_G, gkrx=v*KRX_G, gtot=gbar+gkrx;
+    document.getElementById('gold-price-disp').textContent=fmtFull(v)+'/g';
+    document.getElementById('gold-price-disp2').textContent=fmtFull(v)+'/g';
+    document.getElementById('v-goldbar').textContent=fmtW(gbar);
+    document.getElementById('v-krxgold').textContent=fmtW(gkrx);
+    document.getElementById('sv-gold').textContent=fmtW(gtot);
+    document.getElementById('gold-saved-badge').textContent='✅ 저장된 값 · '+savedAt;
+    document.getElementById('gold-saved-badge').style.color='#4ade80';
+    updateTotal(gtot);
+  }
 }
 
 let cryptoTotal=0;
@@ -301,6 +331,7 @@ async function loadCrypto(){
   updateTotal(goldPrice*(GOLDBAR_G+KRX_G));
   document.getElementById('last-upd').textContent='마지막 업데이트: '+new Date().toLocaleTimeString('ko-KR',{timeZone:'Asia/Seoul',hour12:false});
 }
+restoreGoldPrice();
 loadCrypto();setInterval(loadCrypto,180000);
 </script>
 </body></html>
