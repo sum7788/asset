@@ -3,593 +3,701 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>수미숨 총자산 대시보드</title>
-<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&family=Nanum+Gothic+Coding&display=swap" rel="stylesheet">
+<title>🪴 수미숨 연금 자산 대시보드</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=Nanum+Gothic:wght@400;700;800&family=Nanum+Gothic+Coding:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
-:root {
-  --bg:#0d0f17;
-  --bg2:#131620;
-  --bg3:#1a1e2e;
-  --border:#252a40;
-  --border2:#333a58;
-  --text:#eef0ff;
-  --text2:#9aa0c0;
-  --text3:#555e88;
+:root{
+  --bg:#12141c;--bg2:#1a1d2e;--bg3:#22263a;
+  --border:#2d3250;--border2:#3d4470;
+  --text:#f0f2ff;--text2:#b0b8d8;--text3:#6878a8;
+  --green:#4ade80;--red:#e03e52;
+  --accent:#60a5fa;
+  --pension:#ff7096;--irp:#ffd166;--dc:#60a5fa;
   --mono:'Nanum Gothic Coding',monospace;
   --sans:'Nanum Gothic',sans-serif;
-  /* 카테고리 컬러 */
-  --c-pension:#ff7096;
-  --c-asset:#ffd166;
-  --c-isa-w:#60a5fa;
-  --c-isa-h:#34d399;
 }
-* { margin:0; padding:0; box-sizing:border-box; }
-body {
-  background:var(--bg);
-  color:var(--text);
-  font-family:var(--sans);
-  min-height:100vh;
-  overflow-x:hidden;
-}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;}
+header{padding:22px 40px;border-bottom:1px solid var(--border);background:var(--bg2);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+.logo{display:flex;align-items:center;gap:14px;}
+.logo img{height:52px;width:auto;}
+.logo-text h1{font-size:18px;font-weight:800;letter-spacing:-.03em;}
+.logo-text p{font-size:11px;color:var(--text2);font-family:var(--mono);margin-top:2px;}
+.header-right{display:flex;align-items:center;gap:12px;}
+.live-badge{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;color:var(--green);}
+.live-dot{width:7px;height:7px;background:var(--green);border-radius:50%;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.ts{font-family:var(--mono);font-size:11px;color:var(--text3);}
+main{max-width:1440px;margin:0 auto;padding:28px 40px 80px;}
 
-/* 배경 오브 */
-.bg-orb {
-  position:fixed; border-radius:50%; filter:blur(120px); opacity:.12; pointer-events:none; z-index:0;
-}
-.orb1 { width:600px;height:600px;background:#ff7096;top:-200px;left:-200px; }
-.orb2 { width:500px;height:500px;background:#60a5fa;bottom:-150px;right:-150px; }
-.orb3 { width:400px;height:400px;background:#ffd166;top:40%;left:40%; }
+/* 요약 카드 */
+.sum-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-bottom:28px;}
+@media(max-width:1200px){.sum-grid{grid-template-columns:repeat(3,1fr);}}
+@media(max-width:680px){.sum-grid{grid-template-columns:repeat(2,1fr);}main{padding:16px 16px 60px;}header{padding:16px;}}
+.sum-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:18px 20px;transition:border-color .2s;}
+.sum-card:hover{border-color:var(--border2);}
+.sum-label{font-family:var(--mono);font-size:10px;color:var(--text2);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px;}
+.sum-value{font-family:var(--mono);font-size:18px;font-weight:700;line-height:1.2;}
+.sum-value.up{color:var(--green);} .sum-value.dn{color:var(--red);}
+.sum-sub{font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:4px;}
 
-/* 헤더 */
-header {
-  position:relative;z-index:10;
-  padding:28px 48px;
-  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;
-  border-bottom:1px solid var(--border);
-  background:rgba(13,15,23,.8);
-  backdrop-filter:blur(20px);
-}
-.logo { display:flex;align-items:center;gap:14px; }
-.logo img { height:48px;width:auto; }
-.logo-text h1 { font-size:20px;font-weight:800;letter-spacing:-.04em; }
-.logo-text p { font-size:11px;color:var(--text2);font-family:var(--mono);margin-top:2px; }
-.header-right { display:flex;align-items:center;gap:16px; }
-.clock { font-family:var(--mono);font-size:11px;color:var(--text3); }
-.update-badge {
-  font-family:var(--mono);font-size:10px;
-  background:var(--bg3);border:1px solid var(--border2);
-  color:var(--text2);padding:4px 10px;border-radius:20px;
-}
+/* 계좌 카드 */
+.acct-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:28px;}
+@media(max-width:900px){.acct-grid{grid-template-columns:1fr;}}
+.acct-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px 22px;transition:border-color .2s;}
+.acct-card:hover{border-color:var(--border2);}
+.acct-name{font-size:14px;font-weight:800;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;}
+.acct-dur{font-family:var(--mono);font-size:10px;color:var(--text3);}
+.acct-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);}
+.acct-row:last-child{border-bottom:none;}
+.acct-key{font-family:var(--mono);font-size:11px;color:var(--text2);}
+.acct-val{font-family:var(--mono);font-size:13px;font-weight:700;}
+.acct-bar-wrap{height:5px;background:var(--border);border-radius:3px;margin-top:12px;overflow:hidden;}
+.acct-bar{height:100%;border-radius:3px;transition:width .8s;}
 
-/* 메인 */
-main {
-  position:relative;z-index:5;
-  max-width:1200px;margin:0 auto;padding:48px 48px 80px;
-}
+/* 섹션 */
+.section{margin-bottom:36px;}
+.sec-hdr{display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border);}
+.sec-title{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text2);font-family:var(--mono);}
+.sec-line{flex:1;height:1px;background:linear-gradient(to right,var(--border2),transparent);margin-left:4px;}
 
-/* 총자산 히어로 */
-.hero {
-  text-align:center;margin-bottom:64px;
-  animation:fadeUp .8s ease both;
-}
-.hero-label {
-  font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;
-  color:var(--text3);margin-bottom:12px;
-}
-.hero-total {
-  font-size:52px;font-weight:800;letter-spacing:-.04em;
-  background:linear-gradient(135deg,#eef0ff 0%,#9aa0c0 100%);
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-  margin-bottom:8px;
-}
-.hero-sub {
-  font-family:var(--mono);font-size:12px;color:var(--text3);
-}
-.hero-bars {
-  display:flex;height:8px;border-radius:4px;overflow:hidden;
-  max-width:600px;margin:24px auto 0;gap:2px;
-}
-.hero-bar-seg { border-radius:4px;transition:width 1.2s cubic-bezier(.4,0,.2,1); }
+/* 카드 */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;overflow:hidden;transition:border-color .2s;}
+.card:hover{border-color:var(--border2);}
+.card-hdr{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+.card-title{font-size:13px;font-weight:700;}
+.card-sub{font-size:11px;color:var(--text2);font-family:var(--mono);margin-top:1px;}
+.chart-wrap{padding:20px;}
+.h380{height:380px;position:relative;}
+.h240{height:240px;position:relative;}
 
-/* 섹션 타이틀 */
-.sec-label {
-  font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;
-  color:var(--text3);margin-bottom:20px;
-  display:flex;align-items:center;gap:10px;
-}
-.sec-label::after {
-  content:'';flex:1;height:1px;background:linear-gradient(to right,var(--border2),transparent);
-}
+/* 탭 */
+.tabs{display:flex;gap:4px;}
+.tab{font-family:var(--mono);font-size:10px;padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;transition:all .15s;}
+.tab.active{background:var(--accent);color:#12141c;font-weight:700;border-color:var(--accent);}
 
-/* 카테고리 그리드 */
-.cat-grid {
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:20px;
-  margin-bottom:48px;
-}
-@media(max-width:700px) { .cat-grid { grid-template-columns:1fr; } }
+/* 범례 */
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:10px;}
+.leg{display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:10px;color:var(--text3);}
+.leg-box{width:12px;height:12px;border-radius:2px;}
+.leg-line{width:16px;height:2px;border-radius:1px;}
+.leg-dash{width:16px;height:0;border-top:2px dashed;}
 
-/* 카테고리 카드 */
-.cat-card {
-  position:relative;overflow:hidden;
-  background:var(--bg2);
-  border:1px solid var(--border);
-  border-radius:20px;
-  padding:28px;
-  cursor:pointer;
-  text-decoration:none;
-  color:inherit;
-  display:block;
-  transition:transform .2s, border-color .2s, box-shadow .2s;
-  animation:fadeUp .8s ease both;
-}
-.cat-card:hover {
-  transform:translateY(-4px);
-  box-shadow:0 20px 60px rgba(0,0,0,.4);
-}
-.cat-card::before {
-  content:'';
-  position:absolute;top:0;left:0;right:0;height:3px;
-  border-radius:20px 20px 0 0;
-  opacity:0;transition:opacity .2s;
-}
-.cat-card:hover::before { opacity:1; }
+/* 2컬럼 */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+@media(max-width:800px){.two-col{grid-template-columns:1fr;}}
+@media(max-width:600px){#milestone-grid{grid-template-columns:1fr!important;}}
 
-/* 카드 컬러별 */
-.cat-pension { border-color:rgba(255,112,150,.2); }
-.cat-pension:hover { border-color:var(--c-pension);box-shadow:0 20px 60px rgba(255,112,150,.15); }
-.cat-pension::before { background:var(--c-pension); }
+/* 도넛 */
+.donut-wrap{height:280px;position:relative;}
 
-.cat-asset { border-color:rgba(255,209,102,.2); }
-.cat-asset:hover { border-color:var(--c-asset);box-shadow:0 20px 60px rgba(255,209,102,.15); }
-.cat-asset::before { background:var(--c-asset); }
-
-.cat-isa-w { border-color:rgba(96,165,250,.2); }
-.cat-isa-w:hover { border-color:var(--c-isa-w);box-shadow:0 20px 60px rgba(96,165,250,.15); }
-.cat-isa-w::before { background:var(--c-isa-w); }
-
-.cat-isa-h { border-color:rgba(52,211,153,.2); }
-.cat-isa-h:hover { border-color:var(--c-isa-h);box-shadow:0 20px 60px rgba(52,211,153,.15); }
-.cat-isa-h::before { background:var(--c-isa-h); }
-
-/* 카드 내부 */
-.cat-glow {
-  position:absolute;top:-60px;right:-60px;
-  width:200px;height:200px;border-radius:50%;
-  opacity:.06;filter:blur(40px);pointer-events:none;
-}
-.cat-icon { font-size:32px;margin-bottom:14px; }
-.cat-top {
-  display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;
-}
-.cat-name { font-size:16px;font-weight:800;letter-spacing:-.02em; }
-.cat-badge {
-  font-family:var(--mono);font-size:9px;
-  padding:3px 8px;border-radius:10px;
-  background:var(--bg3);color:var(--text3);border:1px solid var(--border);
-}
-.cat-value {
-  font-family:var(--mono);font-size:26px;font-weight:700;
-  letter-spacing:-.02em;margin-bottom:4px;
-}
-.cat-sub {
-  font-family:var(--mono);font-size:10px;color:var(--text3);margin-bottom:16px;
-}
-.cat-items {
-  display:flex;flex-direction:column;gap:6px;
-  padding-top:16px;border-top:1px solid var(--border);
-}
-.cat-item {
-  display:flex;justify-content:space-between;align-items:center;
-}
-.cat-item-name {
-  font-size:11px;color:var(--text2);
-  display:flex;align-items:center;gap:6px;
-}
-.cat-item-dot {
-  width:6px;height:6px;border-radius:50%;flex-shrink:0;
-}
-.cat-item-val {
-  font-family:var(--mono);font-size:11px;font-weight:700;
-}
-.cat-pct-bar {
-  height:3px;background:var(--border);border-radius:2px;overflow:hidden;margin-top:14px;
-}
-.cat-pct-fill {
-  height:100%;border-radius:2px;transition:width 1.2s cubic-bezier(.4,0,.2,1);
-}
-.cat-arrow {
-  position:absolute;bottom:24px;right:24px;
-  font-size:18px;opacity:.3;transition:opacity .2s,transform .2s;
-}
-.cat-card:hover .cat-arrow { opacity:.8;transform:translateX(4px); }
-
-/* 실시간 라이브 */
-.live-row {
-  display:flex;align-items:center;gap:6px;
-  font-family:var(--mono);font-size:10px;color:#4ade80;
-  margin-bottom:4px;
-}
-.live-dot {
-  width:6px;height:6px;background:#4ade80;border-radius:50%;
-  animation:pulse 2s infinite;
-}
-@keyframes pulse { 0%,100%{opacity:1}50%{opacity:.3} }
-
-/* 하단 요약 바 */
-.summary-bar {
-  background:var(--bg2);border:1px solid var(--border);
-  border-radius:16px;padding:20px 28px;
-  display:grid;grid-template-columns:repeat(4,1fr);gap:20px;
-  animation:fadeUp .8s .4s ease both;
-}
-@media(max-width:700px) { .summary-bar { grid-template-columns:repeat(2,1fr); } }
-.sb-item { text-align:center; }
-.sb-label { font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:6px; }
-.sb-val { font-family:var(--mono);font-size:15px;font-weight:700; }
-.sb-val.up { color:#4ade80; } .sb-val.dn { color:#ff6b8a; }
-
-@keyframes fadeUp {
-  from { opacity:0;transform:translateY(20px); }
-  to   { opacity:1;transform:translateY(0); }
-}
-
-footer {
-  position:relative;z-index:5;
-  border-top:1px solid var(--border);
-  padding:18px 48px;
-  display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;
-}
-footer p { font-size:11px;color:var(--text3);font-family:var(--mono); }
-
-/* 미완성 카드 오버레이 */
-.coming-soon {
-  position:absolute;inset:0;border-radius:20px;
-  background:rgba(13,15,23,.6);backdrop-filter:blur(4px);
-  display:flex;align-items:center;justify-content:center;
-  flex-direction:column;gap:8px;
-}
-.cs-badge {
-  font-family:var(--mono);font-size:11px;font-weight:700;
-  background:var(--bg3);border:1px solid var(--border2);
-  padding:6px 16px;border-radius:20px;color:var(--text2);
-}
+@keyframes pulse-border{0%,100%{box-shadow:0 0 0 0 #60a5fa44;}50%{box-shadow:0 0 0 6px #60a5fa00;}}
+footer{border-top:1px solid var(--border);padding:18px 40px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+footer p{font-size:11px;color:var(--text3);font-family:var(--mono);}
 </style>
 </head>
 <body>
-
-<div class="bg-orb orb1"></div>
-<div class="bg-orb orb2"></div>
-<div class="bg-orb orb3"></div>
-
 <header>
   <div class="logo">
     <img src="data:image/jpeg;base64,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" alt="수미숨">
     <div class="logo-text">
-      <h1>🏠 수미숨 총자산 대시보드</h1>
-      <p>Total Asset Dashboard · 전체 자산 현황</p>
+      <h1>🪴 수미숨 연금 자산 대시보드</h1>
+      <p>🗓️ Pension Asset Dashboard · 2020.03 ~</p>
     </div>
   </div>
   <div class="header-right">
-    <a href="../" style="font-family:var(--mono);font-size:10px;color:var(--text2);background:#1a1d2e;border:1px solid #2d3250;padding:5px 12px;border-radius:8px;text-decoration:none;">← 총자산으로</a>
-    <div class="update-badge">📅 2026-02 기준</div>
-    <div class="clock" id="clock"></div>
+    <a href="../" style="font-family:var(--mono);font-size:10px;color:var(--text2);background:#1a1d2e;border:1px solid #2d3250;padding:5px 12px;border-radius:8px;text-decoration:none;transition:all .15s;" onmouseover="this.style.borderColor='#3d4470'" onmouseout="this.style.borderColor='#2d3250'">← 총자산으로</a>
+    <div class="live-badge"><div class="live-dot"></div>2026-02 기준</div>
+    <div class="ts" id="clock"></div>
   </div>
 </header>
 
 <main>
 
-  <!-- 총자산 히어로 -->
-  <div class="hero">
-    <div class="hero-label">💎 총 자산 현황</div>
-    <div class="hero-total" id="hero-total">—</div>
-    <div class="hero-sub" id="hero-sub">연금자산 + 실물/가상자산 + ISA</div>
-    <div class="hero-bars" id="hero-bars"></div>
+<!-- 요약 카드 -->
+<div class="sum-grid">
+  <div class="sum-card"><div class="sum-label">💰 전체 평가금액</div><div class="sum-value" id="sv-total">—</div><div class="sum-sub" id="ss-total">—</div></div>
+  <div class="sum-card"><div class="sum-label">🏦 납입 원금</div><div class="sum-value" id="sv-principal">—</div><div class="sum-sub">3개 계좌 합산</div></div>
+  <div class="sum-card"><div class="sum-label">📈 원금 대비 수익</div><div class="sum-value" id="sv-profit">—</div><div class="sum-sub" id="ss-profit">—</div></div>
+  <div class="sum-card"><div class="sum-label">🎯 단순 수익률</div><div class="sum-value" id="sv-twr">—</div><div class="sum-sub">납입원금 기준</div></div>
+  <div class="sum-card"><div class="sum-label">🔄 전월 대비 증감</div><div class="sum-value" id="sv-mom">—</div><div class="sum-sub" id="ss-mom">—</div></div>
+  <div class="sum-card"><div class="sum-label">📅 연금 누적 투자일</div><div class="sum-value" id="sv-days">—</div><div class="sum-sub">연금저축 2020.03 기준</div></div>
+</div>
+
+<!-- 계좌 카드 -->
+<div class="acct-grid">
+  <div class="acct-card">
+    <div class="acct-name"><span>🌸 연금저축펀드</span><span class="acct-dur" id="dur-pension"></span></div>
+    <div class="acct-row"><span class="acct-key">💵 납입 원금</span><span class="acct-val" id="ap-p">—</span></div>
+    <div class="acct-row"><span class="acct-key">📊 월말 평가금액</span><span class="acct-val" id="ap-e">—</span></div>
+    <div class="acct-row"><span class="acct-key">✨ 운용 수익</span><span class="acct-val" id="ap-g">—</span></div>
+    <div class="acct-row"><span class="acct-key">🎲 수익률</span><span class="acct-val" id="ap-r">—</span></div>
+    <div class="acct-bar-wrap"><div class="acct-bar" id="ap-bar" style="background:var(--pension)"></div></div>
   </div>
-
-  <!-- 카테고리 그리드 -->
-  <div class="sec-label">📂 자산 카테고리</div>
-  <div class="cat-grid">
-
-    <!-- 연금자산 -->
-    <a class="cat-card cat-pension" href="./pension/" style="animation-delay:.1s">
-      <div class="cat-glow" style="background:var(--c-pension)"></div>
-      <div class="cat-icon">🪴</div>
-      <div class="cat-top">
-        <div class="cat-name">연금자산</div>
-        <div class="cat-badge">3개 계좌</div>
-      </div>
-      <div class="cat-value" id="val-pension">98,651,170원</div>
-      <div class="cat-sub">연금저축 · IRP · DC</div>
-      <div class="cat-items">
-        <div class="cat-item">
-          <span class="cat-item-name"><span class="cat-item-dot" style="background:#ff7096"></span>연금저축펀드</span>
-          <span class="cat-item-val" style="color:#ff7096">7,749만원</span>
-        </div>
-        <div class="cat-item">
-          <span class="cat-item-name"><span class="cat-item-dot" style="background:#ffd166"></span>개인형 IRP</span>
-          <span class="cat-item-val" style="color:#ffd166">1,828만원</span>
-        </div>
-        <div class="cat-item">
-          <span class="cat-item-name"><span class="cat-item-dot" style="background:#60a5fa"></span>DC</span>
-          <span class="cat-item-val" style="color:#60a5fa">287만원</span>
-        </div>
-      </div>
-      <div class="cat-pct-bar" style="margin-top:14px">
-        <div class="cat-pct-fill" id="bar-pension" style="background:var(--c-pension);width:0%"></div>
-      </div>
-      <div class="cat-arrow">→</div>
-    </a>
-
-    <!-- 실물/가상자산 -->
-    <a class="cat-card cat-asset" href="./assets/" style="animation-delay:.2s;">
-      <div class="cat-glow" style="background:var(--c-asset)"></div>
-      <div class="cat-icon">✨</div>
-      <div class="cat-top">
-        <div class="cat-name">실물 · 가상자산</div>
-        <div class="cat-badge">3종목</div>
-      </div>
-      <div class="live-row"><div class="live-dot"></div>실시간 시세 연동</div>
-      <div class="cat-value" id="val-asset">로딩중...</div>
-      <div class="cat-sub" id="sub-asset">골드바 · 금현물 · 비트코인</div>
-      <div class="cat-items" id="items-asset">
-        <div class="cat-item">
-          <span class="cat-item-name"><span class="cat-item-dot" style="background:#f59e0b"></span>골드바 (g)</span>
-          <span class="cat-item-val" id="v-goldbar" style="color:#f59e0b">—</span>
-        </div>
-        <div class="cat-item">
-          <span class="cat-item-name"><span class="cat-item-dot" style="background:#fbbf24"></span>금현물 (ACE KRX금현물)</span>
-          <span class="cat-item-val" id="v-goldstock" style="color:#fbbf24">—</span>
-        </div>
-        <div class="cat-item">
-          <span class="cat-item-name"><span class="cat-item-dot" style="background:#f97316"></span>비트코인 (BTC)</span>
-          <span class="cat-item-val" id="v-btc" style="color:#f97316">—</span>
-        </div>
-      </div>
-      <div class="cat-pct-bar" style="margin-top:14px">
-        <div class="cat-pct-fill" id="bar-asset" style="background:var(--c-asset);width:0%"></div>
-      </div>
-      <div class="cat-arrow">→</div>
-    </a>
-
-    <!-- ISA 아내 -->
-    <div class="cat-card cat-isa-w" style="animation-delay:.3s;cursor:default;">
-      <div class="cat-glow" style="background:var(--c-isa-w)"></div>
-      <div class="cat-icon">💙</div>
-      <div class="cat-top">
-        <div class="cat-name">ISA · 아내</div>
-        <div class="cat-badge">중개형 ISA</div>
-      </div>
-      <div class="cat-value" id="val-isa-w">—</div>
-      <div class="cat-sub">납입 원금 · 운용 수익 구분</div>
-      <div class="cat-items">
-        <div class="cat-item">
-          <span class="cat-item-name"><span class="cat-item-dot" style="background:#60a5fa"></span>납입 원금</span>
-          <span class="cat-item-val" id="isa-w-p" style="color:#60a5fa">—</span>
-        </div>
-        <div class="cat-item">
-          <span class="cat-item-name"><span class="cat-item-dot" style="background:#34d399"></span>운용 수익</span>
-          <span class="cat-item-val" id="isa-w-g" style="color:#34d399">—</span>
-        </div>
-      </div>
-      <div class="cat-pct-bar" style="margin-top:14px">
-        <div class="cat-pct-fill" id="bar-isa-w" style="background:var(--c-isa-w);width:0%"></div>
-      </div>
-      <!-- 준비중 오버레이 -->
-      <div class="coming-soon">
-        <div style="font-size:28px">🔧</div>
-        <div class="cs-badge">데이터 입력 준비중</div>
-        <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">금액을 알려주시면 바로 반영해드려요</div>
-      </div>
-    </div>
-
-    <!-- ISA 남편 -->
-    <div class="cat-card cat-isa-h" style="animation-delay:.4s;cursor:default;">
-      <div class="cat-glow" style="background:var(--c-isa-h)"></div>
-      <div class="cat-icon">💚</div>
-      <div class="cat-top">
-        <div class="cat-name">ISA · 남편</div>
-        <div class="cat-badge">중개형 ISA</div>
-      </div>
-      <div class="cat-value" id="val-isa-h">—</div>
-      <div class="cat-sub">납입 원금 · 운용 수익 구분</div>
-      <div class="cat-items">
-        <div class="cat-item">
-          <span class="cat-item-name"><span class="cat-item-dot" style="background:#34d399"></span>납입 원금</span>
-          <span class="cat-item-val" id="isa-h-p" style="color:#34d399">—</span>
-        </div>
-        <div class="cat-item">
-          <span class="cat-item-name"><span class="cat-item-dot" style="background:#60a5fa"></span>운용 수익</span>
-          <span class="cat-item-val" id="isa-h-g" style="color:#60a5fa">—</span>
-        </div>
-      </div>
-      <div class="cat-pct-bar" style="margin-top:14px">
-        <div class="cat-pct-fill" id="bar-isa-h" style="background:var(--c-isa-h);width:0%"></div>
-      </div>
-      <div class="coming-soon">
-        <div style="font-size:28px">🔧</div>
-        <div class="cs-badge">데이터 입력 준비중</div>
-        <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">금액을 알려주시면 바로 반영해드려요</div>
-      </div>
-    </div>
-
+  <div class="acct-card">
+    <div class="acct-name"><span>💛 개인형 IRP</span><span class="acct-dur" id="dur-irp"></span></div>
+    <div class="acct-row"><span class="acct-key">💵 납입 원금</span><span class="acct-val" id="ai-p">—</span></div>
+    <div class="acct-row"><span class="acct-key">📊 월말 평가금액</span><span class="acct-val" id="ai-e">—</span></div>
+    <div class="acct-row"><span class="acct-key">✨ 운용 수익</span><span class="acct-val" id="ai-g">—</span></div>
+    <div class="acct-row"><span class="acct-key">🎲 수익률</span><span class="acct-val" id="ai-r">—</span></div>
+    <div class="acct-bar-wrap"><div class="acct-bar" id="ai-bar" style="background:var(--irp)"></div></div>
   </div>
+  <div class="acct-card">
+    <div class="acct-name"><span>🩵 DC</span><span class="acct-dur" id="dur-dc"></span></div>
+    <div class="acct-row"><span class="acct-key">💵 납입 원금</span><span class="acct-val" id="ad-p">—</span></div>
+    <div class="acct-row"><span class="acct-key">📊 월말 평가금액</span><span class="acct-val" id="ad-e">—</span></div>
+    <div class="acct-row"><span class="acct-key">✨ 운용 수익</span><span class="acct-val" id="ad-g">—</span></div>
+    <div class="acct-row"><span class="acct-key">🎲 수익률</span><span class="acct-val" id="ad-r">—</span></div>
+    <div class="acct-bar-wrap"><div class="acct-bar" id="ad-bar" style="background:var(--dc)"></div></div>
+  </div>
+</div>
 
-  <!-- 하단 요약 -->
-  <div class="sec-label" style="animation-delay:.5s">📊 전체 요약</div>
-  <div class="summary-bar">
-    <div class="sb-item">
-      <div class="sb-label">💰 총 자산</div>
-      <div class="sb-val" id="sb-total">—</div>
+<!-- 월별 흐름 -->
+<div class="section">
+  <div class="sec-hdr"><span>📈</span><span class="sec-title">월별 잔고 흐름</span><div class="sec-line"></div></div>
+  <div class="card">
+    <div class="card-hdr">
+      <div><div class="card-title">📊 월말 평가금액 vs 납입 원금 · 계좌별 스택</div><div class="card-sub">📂 실제 원장 데이터 · 2020.03 ~</div></div>
+      <div class="tabs" id="main-tabs"></div>
     </div>
-    <div class="sb-item">
-      <div class="sb-label">🏦 총 납입 원금</div>
-      <div class="sb-val" id="sb-principal">—</div>
-    </div>
-    <div class="sb-item">
-      <div class="sb-label">📈 총 운용 수익</div>
-      <div class="sb-val up" id="sb-profit">—</div>
-    </div>
-    <div class="sb-item">
-      <div class="sb-label">🎯 전체 수익률</div>
-      <div class="sb-val up" id="sb-rate">—</div>
+    <div class="chart-wrap">
+      <div class="h380"><canvas id="main-chart"></canvas></div>
+      <div class="legend" style="margin-top:10px;">
+        <div class="leg"><div class="leg-box" style="background:#f4727260;border:1px solid #f47272;"></div>연금저축</div>
+        <div class="leg"><div class="leg-box" style="background:#34d39960;border:1px solid #34d399;"></div>개인형IRP</div>
+        <div class="leg"><div class="leg-box" style="background:#a78bfa60;border:1px solid #a78bfa;"></div>DC</div>
+        <div class="leg"><div class="leg-dash" style="border-color:#e2e8f0aa;"></div>납입원금</div>
+        <div class="leg"><div class="leg-line" style="background:#fb923c;height:3px;border-radius:2px;"></div>운용수익(+)</div>
+        <div class="leg"><div class="leg-line" style="background:#38bdf8;height:3px;border-radius:2px;"></div>운용수익(-)</div>
+      </div>
     </div>
   </div>
+</div>
+
+<!-- 계좌별 비중 도넛 + 계좌별 흐름 -->
+<div class="section">
+  <div class="sec-hdr"><span>🏦</span><span class="sec-title">계좌별 비중 & 흐름</span><div class="sec-line"></div></div>
+  <div class="two-col" style="margin-bottom:16px;">
+    <!-- 도넛: 계좌별 비중 -->
+    <div class="card">
+      <div class="card-hdr"><div><div class="card-title">🥧 계좌별 자산 비중</div><div class="card-sub">전체 연금자산 기준</div></div></div>
+      <div class="chart-wrap"><div class="donut-wrap"><canvas id="donut-acct"></canvas></div></div>
+    </div>
+    <!-- 도넛: 원금 vs 수익 -->
+    <div class="card">
+      <div class="card-hdr"><div><div class="card-title">💹 원금 vs 운용수익</div><div class="card-sub">전체 연금자산 기준</div></div></div>
+      <div class="chart-wrap"><div class="donut-wrap"><canvas id="donut-pnl"></canvas></div></div>
+    </div>
+  </div>
+  <!-- 연금저축: 전체 너비 -->
+  <div class="card" style="margin-bottom:16px;">
+    <div class="card-hdr"><div><div class="card-title">🌸 연금저축펀드</div><div class="card-sub">📅 2020.03 ~</div></div></div>
+    <div class="chart-wrap"><div class="h240"><canvas id="chart-pension"></canvas></div></div>
+  </div>
+  <!-- IRP + DC -->
+  <div class="two-col">
+    <div class="card">
+      <div class="card-hdr"><div><div class="card-title">💛 개인형 IRP</div><div class="card-sub">📅 2020.05 ~</div></div></div>
+      <div class="chart-wrap"><div class="h240"><canvas id="chart-irp"></canvas></div></div>
+    </div>
+    <div class="card">
+      <div class="card-hdr"><div><div class="card-title">🩵 DC</div><div class="card-sub">📅 2026.02 ~</div></div></div>
+      <div class="chart-wrap"><div class="h240"><canvas id="chart-dc"></canvas></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- 마일스톤 섹션 -->
+<div class="section">
+  <div class="sec-hdr"><span>🎮</span><span class="sec-title">연금 레벨업 마일스톤</span><div class="sec-line"></div></div>
+  <div class="card">
+    <div class="card-hdr">
+      <div><div class="card-title">🏆 연금자산 성장 레벨</div><div class="card-sub">전체 평가금액 기준 달성 현황</div></div>
+      <div id="current-level-badge" style="font-family:var(--mono);font-size:12px;color:#12141c;background:var(--accent);padding:4px 12px;border-radius:20px;font-weight:700;"></div>
+    </div>
+    <div class="chart-wrap" style="padding:24px 28px;">
+      <!-- 진행바 -->
+      <div id="level-progress-wrap" style="margin-bottom:28px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <span id="lp-from" style="font-family:var(--mono);font-size:11px;color:var(--text2);"></span>
+          <span id="lp-pct" style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--accent);"></span>
+          <span id="lp-to" style="font-family:var(--mono);font-size:11px;color:var(--text2);"></span>
+        </div>
+        <div style="height:14px;background:var(--bg3);border-radius:7px;overflow:hidden;border:1px solid var(--border);">
+          <div id="lp-bar" style="height:100%;border-radius:7px;transition:width 1s ease;background:linear-gradient(90deg,var(--pension),var(--accent));"></div>
+        </div>
+        <div id="lp-desc" style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:6px;text-align:center;"></div>
+      </div>
+      <!-- 레벨 카드 그리드 -->
+      <div id="milestone-grid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;">
+      </div>
+    </div>
+  </div>
+</div>
 
 </main>
 
 <footer>
-  <p>🪴 수미숨 총자산 대시보드 · 실물/가상자산 실시간 시세 · 연금/ISA 월말 수동 업데이트</p>
-  <p>골드 시세: Yahoo Finance (GC=F) · 비트코인: CoinGecko API</p>
+  <p>📋 실제 원장 데이터 기반 · 2020.03 ~ 2026-02 · 매월 말 수동 업데이트</p>
+  <p>🌸 연금저축 · 💛 개인형IRP · 🩵 DC · 총 3개 계좌</p>
 </footer>
 
 <script>
-// 시계
-function updateClock() {
+function updateClock(){
   document.getElementById('clock').textContent =
-    new Date().toLocaleString('ko-KR', {timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
+    new Date().toLocaleString('ko-KR',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit',hour12:false});
 }
-updateClock(); setInterval(updateClock, 1000);
+updateClock();
 
-// ── 고정 데이터 ──
-const PENSION_VAL = 98651170;
-const PENSION_PP  = 66041010;
-const PENSION_PG  = 32610160;
+const DATA = [
+  {lbl:'2020-03',pp:3000000,pg:-182335,pe:2817665,ip:0,ig:0,ie:0,dp:null,dg:null,de:null,tp:3000000,tg:-182335,te:2817665},
+  {lbl:'2020-04',pp:3000000,pg:3657,pe:3003657,ip:0,ig:0,ie:0,dp:null,dg:null,de:null,tp:3000000,tg:3657,te:3003657},
+  {lbl:'2020-05',pp:3000000,pg:103817,pe:3103817,ip:150000,ig:6,ie:150006,dp:null,dg:null,de:null,tp:3150000,tg:103823,te:3253823},
+  {lbl:'2020-06',pp:3000000,pg:156217,pe:3156217,ip:150000,ig:3242,ie:153242,dp:null,dg:null,de:null,tp:3150000,tg:159459,te:3309459},
+  {lbl:'2020-07',pp:3000000,pg:346742,pe:3346742,ip:150000,ig:11677,ie:161677,dp:null,dg:null,de:null,tp:3150000,tg:358419,te:3508419},
+  {lbl:'2020-08',pp:3000000,pg:503177,pe:3503177,ip:150000,ig:24022,ie:174022,dp:null,dg:null,de:null,tp:3150000,tg:527199,te:3677199},
+  {lbl:'2020-09',pp:3000000,pg:346412,pe:3346412,ip:150000,ig:15270,ie:165270,dp:null,dg:null,de:null,tp:3150000,tg:361682,te:3511682},
+  {lbl:'2020-10',pp:3000000,pg:246562,pe:3246562,ip:150000,ig:8105,ie:158105,dp:null,dg:null,de:null,tp:3150000,tg:254667,te:3404667},
+  {lbl:'2020-11',pp:3000000,pg:426007,pe:3426007,ip:150000,ig:16759,ie:166759,dp:null,dg:null,de:null,tp:3150000,tg:442766,te:3592766},
+  {lbl:'2020-12',pp:3000000,pg:545662,pe:3545662,ip:390000,ig:21298,ie:411298,dp:null,dg:null,de:null,tp:3390000,tg:566960,te:3956960},
+  {lbl:'2021-01',pp:11000000,pg:954603,pe:11954603,ip:390000,ig:41043,ie:431043,dp:null,dg:null,de:null,tp:11390000,tg:995646,te:12385646},
+  {lbl:'2021-02',pp:11000000,pg:926128,pe:11926128,ip:390000,ig:38331,ie:428331,dp:null,dg:null,de:null,tp:11390000,tg:964459,te:12354459},
+  {lbl:'2021-03',pp:11000000,pg:835028,pe:11835028,ip:390000,ig:31514,ie:421514,dp:null,dg:null,de:null,tp:11390000,tg:866542,te:12256542},
+  {lbl:'2021-04',pp:11000000,pg:1215659,pe:12215659,ip:390000,ig:43442,ie:433442,dp:null,dg:null,de:null,tp:11390000,tg:1259101,te:12649101},
+  {lbl:'2021-05',pp:11000000,pg:1457844,pe:12457844,ip:1000000,ig:216913,ie:1216913,dp:null,dg:null,de:null,tp:12000000,tg:1674757,te:13674757},
+  {lbl:'2021-06',pp:11000000,pg:2075529,pe:13075529,ip:1000000,ig:270037,ie:1270037,dp:null,dg:null,de:null,tp:12000000,tg:2345566,te:14345566},
+  {lbl:'2021-07',pp:12000000,pg:2034523,pe:14034523,ip:1500000,ig:283433,ie:1783433,dp:null,dg:null,de:null,tp:13500000,tg:2317956,te:15817956},
+  {lbl:'2021-08',pp:12000000,pg:2529224,pe:14529224,ip:1500000,ig:338756,ie:1838756,dp:null,dg:null,de:null,tp:13500000,tg:2867980,te:16367980},
+  {lbl:'2021-09',pp:12000000,pg:2245204,pe:14245204,ip:1500000,ig:303380,ie:1803380,dp:null,dg:null,de:null,tp:13500000,tg:2548584,te:16048584},
+  {lbl:'2021-10',pp:12000000,pg:2739698,pe:14739698,ip:1500000,ig:347787,ie:1847787,dp:null,dg:null,de:null,tp:13500000,tg:3087485,te:16587485},
+  {lbl:'2021-11',pp:12000000,pg:3239673,pe:15239673,ip:1500000,ig:420961,ie:1920961,dp:null,dg:null,de:null,tp:13500000,tg:3660634,te:17160634},
+  {lbl:'2021-12',pp:15000000,pg:3074398,pe:18074398,ip:1800000,ig:414066,ie:2214066,dp:null,dg:null,de:null,tp:16800000,tg:3488464,te:20288464},
+  {lbl:'2022-01',pp:17000000,pg:1373058,pe:18373058,ip:1800000,ig:251539,ie:2051539,dp:null,dg:null,de:null,tp:18800000,tg:1624597,te:20424597},
+  {lbl:'2022-02',pp:17000000,pg:1021013,pe:18021013,ip:1800000,ig:331096,ie:2131096,dp:null,dg:null,de:null,tp:18800000,tg:1352109,te:20152109},
+  {lbl:'2022-03',pp:17000000,pg:1908078,pe:18908078,ip:1800000,ig:428341,ie:2228341,dp:null,dg:null,de:null,tp:18800000,tg:2336419,te:21136419},
+  {lbl:'2022-04',pp:17000000,pg:545475,pe:17545475,ip:1800000,ig:305789,ie:2105789,dp:null,dg:null,de:null,tp:18800000,tg:851264,te:19651264},
+  {lbl:'2022-05',pp:17000000,pg:-93825,pe:16906175,ip:1800000,ig:267270,ie:2067270,dp:null,dg:null,de:null,tp:18800000,tg:173445,te:18973445},
+  {lbl:'2022-06',pp:17000000,pg:-479685,pe:16520315,ip:1800000,ig:163333,ie:1963333,dp:null,dg:null,de:null,tp:18800000,tg:-316352,te:18483648},
+  {lbl:'2022-07',pp:17000000,pg:614394,pe:17614394,ip:1800000,ig:301495,ie:2101495,dp:null,dg:null,de:null,tp:18800000,tg:915889,te:19715889},
+  {lbl:'2022-08',pp:17000000,pg:619819,pe:17619819,ip:1800000,ig:289906,ie:2089906,dp:null,dg:null,de:null,tp:18800000,tg:909725,te:19709725},
+  {lbl:'2022-09',pp:17000000,pg:-409656,pe:16590344,ip:1800000,ig:176148,ie:1976148,dp:null,dg:null,de:null,tp:18800000,tg:-233508,te:18566492},
+  {lbl:'2022-10',pp:18000000,pg:-644412,pe:17355588,ip:1800000,ig:179038,ie:1979038,dp:null,dg:null,de:null,tp:19800000,tg:-465374,te:19334626},
+  {lbl:'2022-11',pp:18000000,pg:-983647,pe:17016353,ip:2200000,ig:176727,ie:2376727,dp:null,dg:null,de:null,tp:20200000,tg:-806920,te:19393080},
+  {lbl:'2022-12',pp:19000000,pg:-2230022,pe:16769978,ip:2200000,ig:38826,ie:2238826,dp:null,dg:null,de:null,tp:21200000,tg:-2191196,te:19008804},
+  {lbl:'2023-01',pp:19000000,pg:-953395,pe:18046605,ip:2200000,ig:213996,ie:2413996,dp:null,dg:null,de:null,tp:21200000,tg:-739399,te:20460601},
+  {lbl:'2023-02',pp:19000000,pg:87880,pe:19087880,ip:2200000,ig:295569,ie:2495569,dp:null,dg:null,de:null,tp:21200000,tg:383449,te:21583449},
+  {lbl:'2023-03',pp:19000000,pg:990015,pe:19990015,ip:2200000,ig:369476,ie:2569476,dp:null,dg:null,de:null,tp:21200000,tg:1359491,te:22559491},
+  {lbl:'2023-04',pp:19500000,pg:1351729,pe:20851729,ip:2200000,ig:381089,ie:2581089,dp:null,dg:null,de:null,tp:21700000,tg:1732818,te:23432818},
+  {lbl:'2023-05',pp:19500000,pg:2526259,pe:22026259,ip:2200000,ig:542298,ie:2742298,dp:null,dg:null,de:null,tp:21700000,tg:3068557,te:24768557},
+  {lbl:'2023-06',pp:19500000,pg:3490835,pe:22990835,ip:2200000,ig:629867,ie:2829867,dp:null,dg:null,de:null,tp:21700000,tg:4120702,te:25820702},
+  {lbl:'2023-07',pp:19500000,pg:4097638,pe:23597638,ip:2200000,ig:695563,ie:2895563,dp:null,dg:null,de:null,tp:21700000,tg:4793201,te:26493201},
+  {lbl:'2023-08',pp:20000000,pg:4246877,pe:24246877,ip:2227591,ig:696774,ie:2924365,dp:null,dg:null,de:null,tp:22227591,tg:4943651,te:27171242},
+  {lbl:'2023-09',pp:21000000,pg:3231531,pe:24231531,ip:2227591,ig:582930,ie:2810521,dp:null,dg:null,de:null,tp:23227591,tg:3814461,te:27042052},
+  {lbl:'2023-10',pp:22500000,pg:2524247,pe:25024247,ip:2227591,ig:529956,ie:2757547,dp:null,dg:null,de:null,tp:24727591,tg:3054203,te:27781794},
+  {lbl:'2023-11',pp:22500000,pg:4219917,pe:26719917,ip:2450000,ig:681238,ie:3131238,dp:null,dg:null,de:null,tp:24950000,tg:4901155,te:29851155},
+  {lbl:'2023-12',pp:24000000,pg:5502803,pe:29502803,ip:3200000,ig:802394,ie:4002394,dp:null,dg:null,de:null,tp:27200000,tg:6305197,te:33505197},
+  {lbl:'2024-01',pp:24000000,pg:6312061,pe:30312061,ip:3200000,ig:894641,ie:4094641,dp:null,dg:null,de:null,tp:27200000,tg:7206702,te:34406702},
+  {lbl:'2024-02',pp:24000000,pg:7724402,pe:31724402,ip:3200000,ig:1038021,ie:4238021,dp:null,dg:null,de:null,tp:27200000,tg:8762423,te:35962423},
+  {lbl:'2024-03',pp:24000000,pg:9078947,pe:33078947,ip:3200000,ig:1166354,ie:4366354,dp:null,dg:null,de:null,tp:27200000,tg:10245301,te:37445301},
+  {lbl:'2024-04',pp:25000000,pg:9113522,pe:34113522,ip:3200000,ig:1171276,ie:4371276,dp:null,dg:null,de:null,tp:28200000,tg:10284798,te:38484798},
+  {lbl:'2024-05',pp:25000000,pg:10614007,pe:35614007,ip:3200000,ig:1333861,ie:4533861,dp:null,dg:null,de:null,tp:28200000,tg:11947868,te:40147868},
+  {lbl:'2024-06',pp:25000000,pg:12584968,pe:37584968,ip:3200000,ig:1538651,ie:4738651,dp:null,dg:null,de:null,tp:28200000,tg:14123619,te:42323619},
+  {lbl:'2024-07',pp:26000000,pg:11420842,pe:37420842,ip:3200000,ig:1405172,ie:4605172,dp:null,dg:null,de:null,tp:29200000,tg:12826014,te:42026014},
+  {lbl:'2024-08',pp:26000000,pg:11012800,pe:37012800,ip:4200000,ig:1360489,ie:5560489,dp:null,dg:null,de:null,tp:30200000,tg:12373289,te:42573289},
+  {lbl:'2024-09',pp:26000000,pg:11509230,pe:37509230,ip:6200000,ig:1432140,ie:7632140,dp:null,dg:null,de:null,tp:32200000,tg:12941370,te:45141370},
+  {lbl:'2024-10',pp:26000000,pg:13392585,pe:39392585,ip:6200000,ig:1700404,ie:7900404,dp:null,dg:null,de:null,tp:32200000,tg:15092989,te:47292989},
+  {lbl:'2024-11',pp:30000000,pg:14269960,pe:44269960,ip:7100000,ig:2259645,ie:9359645,dp:null,dg:null,de:null,tp:37100000,tg:16529605,te:53629605},
+  {lbl:'2024-12',pp:30000000,pg:17249110,pe:47249110,ip:7100000,ig:2811796,ie:9911796,dp:null,dg:null,de:null,tp:37100000,tg:20060906,te:57160906},
+  {lbl:'2025-01',pp:30000000,pg:16984733,pe:46984733,ip:10100000,ig:2774632,ie:12874632,dp:null,dg:null,de:null,tp:40100000,tg:19759365,te:59859365},
+  {lbl:'2025-02',pp:30000000,pg:15427881,pe:45427881,ip:10100000,ig:2312111,ie:12412111,dp:null,dg:null,de:null,tp:40100000,tg:17739992,te:57839992},
+  {lbl:'2025-03',pp:30000000,pg:12507418,pe:42507418,ip:10100000,ig:1636743,ie:11736743,dp:null,dg:null,de:null,tp:40100000,tg:14144161,te:54244161},
+  {lbl:'2025-04',pp:32000000,pg:11922178,pe:43922178,ip:10100000,ig:1527523,ie:11627523,dp:null,dg:null,de:null,tp:42100000,tg:13449701,te:55549701},
+  {lbl:'2025-05',pp:32000000,pg:14761070,pe:46761070,ip:10100000,ig:2244626,ie:12344626,dp:null,dg:null,de:null,tp:42100000,tg:17005696,te:59105696},
+  {lbl:'2025-06',pp:32000000,pg:16770034,pe:48770034,ip:10100000,ig:2672487,ie:12772487,dp:null,dg:null,de:null,tp:42100000,tg:19442521,te:61542521},
+  {lbl:'2025-07',pp:32000000,pg:20130152,pe:52130152,ip:10100000,ig:3489666,ie:13589666,dp:null,dg:null,de:null,tp:42100000,tg:23619818,te:65719818},
+  {lbl:'2025-08',pp:33000000,pg:20705833,pe:53705833,ip:10100000,ig:3655349,ie:13755349,dp:null,dg:null,de:null,tp:43100000,tg:24361182,te:67461182},
+  {lbl:'2025-09',pp:34000000,pg:24162925,pe:58162925,ip:10100000,ig:4452111,ie:14552111,dp:null,dg:null,de:null,tp:44100000,tg:28615036,te:72715036},
+  {lbl:'2025-10',pp:36000000,pg:28654498,pe:64654498,ip:10100000,ig:5479765,ie:15579765,dp:null,dg:null,de:null,tp:46100000,tg:34134263,te:80234263},
+  {lbl:'2025-11',pp:45000000,pg:28859053,pe:73859053,ip:10100000,ig:5497574,ie:15597574,dp:null,dg:null,de:null,tp:55100000,tg:34356627,te:89456627},
+  {lbl:'2025-12',pp:45000000,pg:28088406,pe:73088406,ip:10100000,ig:5316379,ie:15416379,dp:null,dg:null,de:null,tp:55100000,tg:33404785,te:88504785},
+  {lbl:'2026-01',pp:48000000,pg:28896772,pe:76896772,ip:13100000,ig:5506241,ie:18606241,dp:null,dg:null,de:null,tp:61100000,tg:34403013,te:95503013},
+  {lbl:'2026-02',pp:50000000,pg:27498812,pe:77498812,ip:13100000,ig:5181857,ie:18281857,dp:2941010,dg:-70509,de:2870501,tp:66041010,tg:32610160,te:98651170},
+];
+const RANGES = [{l:'1Y',m:12},{l:'2Y',m:24},{l:'3Y',m:36},{l:'전체',m:999}];
+let activeM = 36, mainChart = null;
 
-// ── 보유 수량 (수정 가능) ──
-const HOLDINGS = {
-  goldbar_g:   0,      // 골드바 보유 그램수
-  gold_qty:    25,     // ACE KRX금현물 수량 (411060.KS)
-  btc:         0,      // 비트코인 보유 개수
-};
-
-// ISA 데이터 (추후 입력)
-const ISA = {
-  wife:   { principal:0, profit:0 },
-  husband:{ principal:0, profit:0 },
-};
-
-function fmt(v) {
-  if (!v) return '—';
-  const abs = Math.abs(v);
-  const s = abs >= 1e8 ? (abs/1e8).toFixed(1)+'억' : Math.round(abs/1e4).toLocaleString()+'만';
-  return (v<0?'-':'') + s + '원';
-}
 function fmtFull(v) {
-  return (v<0?'-':'') + Math.abs(Math.round(v)).toLocaleString() + '원';
+  if (v === null || v === undefined) return '—';
+  return (v < 0 ? '-' : '') + Math.abs(v).toLocaleString() + '원';
+}
+function fmtPct(g, p) {
+  if (!p) return '—';
+  const r = (g / p * 100);
+  return (r >= 0 ? '+' : '') + r.toFixed(2) + '%';
+}
+function calcDur(sy, sm) {
+  const d = DATA[DATA.length - 1];
+  const [ly, lm] = d.lbl.split('-').map(Number);
+  let mo = (ly - sy) * 12 + (lm - sm);
+  if (mo < 0) mo = 0;
+  const y = Math.floor(mo / 12), m = mo % 12;
+  return (y > 0 ? y + '년 ' : '') + m + '개월';
 }
 
-// ── 시세 불러오기 ──
-async function fetchPrice(ticker) {
-  try {
-    const r = await fetch(`/api/yahoo?ticker=${encodeURIComponent(ticker)}&range=1d`);
-    const d = await r.json();
-    const closes = d?.chart?.result?.[0]?.indicators?.quote?.[0]?.close?.filter(v=>v!=null);
-    return closes?.length ? closes[closes.length-1] : null;
-  } catch { return null; }
-}
+function renderSummary() {
+  const d = DATA[DATA.length - 1];
+  const p = DATA[DATA.length - 2];
 
-async function fetchBTC() {
-  try {
-    const r = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=krw');
-    const d = await r.json();
-    return d?.bitcoin?.krw || null;
-  } catch { return null; }
-}
+  document.getElementById('sv-total').textContent = fmtFull(d.te);
+  document.getElementById('ss-total').textContent = d.lbl + ' 기준';
+  document.getElementById('sv-principal').textContent = fmtFull(d.tp);
 
-async function fetchUSDKRW() {
-  try {
-    const r = await fetch(`/api/yahoo?ticker=USDKRW%3DX&range=1d`);
-    const d = await r.json();
-    const closes = d?.chart?.result?.[0]?.indicators?.quote?.[0]?.close?.filter(v=>v!=null);
-    return closes?.length ? closes[closes.length-1] : 1380;
-  } catch { return 1380; }
-}
+  const profit = d.tg, profitUp = profit >= 0;
+  const pe = document.getElementById('sv-profit');
+  pe.textContent = (profitUp ? '+' : '') + profit.toLocaleString() + '원';
+  pe.className = 'sum-value ' + (profitUp ? 'up' : 'dn');
+  document.getElementById('ss-profit').textContent = fmtPct(d.tg, d.tp);
 
-async function loadAssets() {
-  // 금 시세 (GC=F: USD/트로이온스)
-  const [goldUSD, goldStock, btcKRW, usdkrw] = await Promise.all([
-    fetchPrice('GC=F'),
-    fetchPrice('411060.KS'),
-    fetchBTC(),
-    fetchUSDKRW(),
-  ]);
+  const twr = (d.tg / d.tp * 100);
+  const te = document.getElementById('sv-twr');
+  te.textContent = (twr >= 0 ? '+' : '') + twr.toFixed(2) + '%';
+  te.className = 'sum-value ' + (twr >= 0 ? 'up' : 'dn');
 
-  // 골드바: USD/트로이온스 → KRW/g (1트로이온스 = 31.1034768g)
-  const goldKRWperG = goldUSD ? (goldUSD * usdkrw / 31.1034768) : null;
-  const goldbarVal  = goldKRWperG ? goldKRWperG * HOLDINGS.goldbar_g : 0;
-  const goldstockVal = goldStock ? goldStock * HOLDINGS.gold_qty : 0;
-  const btcVal       = btcKRW   ? btcKRW * HOLDINGS.btc : 0;
-  const assetTotal   = goldbarVal + goldstockVal + btcVal;
-
-  // UI 업데이트
-  if (goldKRWperG) {
-    document.getElementById('v-goldbar').textContent =
-      HOLDINGS.goldbar_g > 0 ? fmtFull(goldbarVal) : `${Math.round(goldKRWperG).toLocaleString()}원/g`;
-  }
-  if (goldStock) {
-    document.getElementById('v-goldstock').textContent =
-      HOLDINGS.gold_qty > 0 ? fmtFull(goldstockVal) : `${Math.round(goldStock).toLocaleString()}원`;
-  }
-  if (btcKRW) {
-    document.getElementById('v-btc').textContent =
-      HOLDINGS.btc > 0 ? fmtFull(btcVal) : `${(btcKRW/1e6).toFixed(1)}백만원/BTC`;
+  if (p) {
+    const mom = d.te - p.te, momUp = mom >= 0;
+    const me = document.getElementById('sv-mom');
+    me.textContent = (momUp ? '+' : '') + mom.toLocaleString() + '원';
+    me.className = 'sum-value ' + (momUp ? 'up' : 'dn');
+    document.getElementById('ss-mom').textContent = (momUp ? '▲ ' : '▼ ') + Math.abs((mom / p.te * 100)).toFixed(2) + '% vs ' + p.lbl;
   }
 
-  document.getElementById('val-asset').textContent =
-    assetTotal > 0 ? fmtFull(assetTotal) : '시세 로드 완료';
-  document.getElementById('sub-asset').textContent =
-    goldKRWperG ? `금 ${Math.round(goldKRWperG).toLocaleString()}원/g · BTC ${btcKRW?(btcKRW/1e6).toFixed(0)+'백만':'—'}원` : '골드바 · 금현물 · 비트코인';
+  // 누적 투자일 (연금저축 2020-03 기준)
+  const startDate = new Date(2020, 2, 2); // 2020년 3월 2일
+  const lastD = DATA[DATA.length-1];
+  const [ly, lm] = lastD.lbl.split('-').map(Number);
+  const endDate = new Date(ly, lm-1, 1);
+  const today = new Date();
+  const diffMs = today - startDate;
+  const totalDays = Math.floor(diffMs / (1000*60*60*24));
+  // 년/월/일 계산
+  let ty = today.getFullYear(), tmo = today.getMonth(), td = today.getDate();
+  let sy2 = 2020, smo2 = 2, sd2 = 2; // 2020-03-02
+  let dy2 = ty - sy2, dmo2 = tmo - smo2, dd2 = td - sd2;
+  if (dd2 < 0) { dmo2--; dd2 += new Date(ty, tmo, 0).getDate(); }
+  if (dmo2 < 0) { dy2--; dmo2 += 12; }
+  document.getElementById('sv-days').textContent = (dy2>0?dy2+'년 ':'')+dmo2+'개월 '+dd2+'일';
+  document.getElementById('sv-days').nextElementSibling.textContent = totalDays.toLocaleString()+'일째 운용중';
 
-  renderTotals(assetTotal);
+  // 운용 기간
+  document.getElementById('dur-pension').textContent = calcDur(2020, 3);
+  document.getElementById('dur-irp').textContent = calcDur(2020, 5);
+  document.getElementById('dur-dc').textContent = calcDur(2026, 2);
+
+  // 계좌별 카드
+  const totalE = d.te;
+  [
+    {pre:'ap', p:d.pp, g:d.pg, e:d.pe, color:'var(--pension)'},
+    {pre:'ai', p:d.ip, g:d.ig, e:d.ie, color:'var(--irp)'},
+    {pre:'ad', p:d.dp||0, g:d.dg||0, e:d.de||0, color:'var(--dc)'},
+  ].forEach(a => {
+    document.getElementById(a.pre + '-p').textContent = fmtFull(a.p);
+    document.getElementById(a.pre + '-e').textContent = fmtFull(a.e);
+    const gEl = document.getElementById(a.pre + '-g');
+    gEl.textContent = (a.g >= 0 ? '+' : '') + a.g.toLocaleString() + '원';
+    gEl.className = 'acct-val ' + (a.g >= 0 ? 'up' : 'dn');
+    document.getElementById(a.pre + '-r').textContent = fmtPct(a.g, a.p);
+    const bar = document.getElementById(a.pre + '-bar');
+    bar.style.width = (totalE > 0 ? (a.e / totalE * 100) : 0) + '%';
+  });
 }
 
-function renderTotals(assetVal) {
-  const isaWval = ISA.wife.principal + ISA.wife.profit;
-  const isaHval = ISA.husband.principal + ISA.husband.profit;
-  const total   = PENSION_VAL + assetVal + isaWval + isaHval;
-
-  // 히어로
-  document.getElementById('hero-total').textContent = fmtFull(total);
-  document.getElementById('hero-sub').textContent =
-    `연금자산 ${fmt(PENSION_VAL)} + 실물/가상자산 ${fmt(assetVal)} + ISA ${fmt(isaWval+isaHval)}`;
-
-  // 비중 바
-  const segs = [
-    {val:PENSION_VAL, color:'#ff7096'},
-    {val:assetVal,    color:'#ffd166'},
-    {val:isaWval,     color:'#60a5fa'},
-    {val:isaHval,     color:'#34d399'},
-  ];
-  const barsEl = document.getElementById('hero-bars');
-  barsEl.innerHTML = segs.map(s=>
-    `<div class="hero-bar-seg" style="width:${total>0?(s.val/total*100).toFixed(1):0}%;background:${s.color};min-width:${s.val>0?'4px':'0'};"></div>`
+// 탭
+function renderTabs() {
+  document.getElementById('main-tabs').innerHTML = RANGES.map(r =>
+    `<button class="tab ${activeM === r.m ? 'active' : ''}" onclick="switchRange(${r.m})">${r.l}</button>`
   ).join('');
+}
+function switchRange(m) { activeM = m; renderTabs(); renderMainChart(); }
+renderTabs();
 
-  // 카드 비중 바
-  if (total>0) {
-    document.getElementById('bar-pension').style.width = (PENSION_VAL/total*100).toFixed(1)+'%';
-    document.getElementById('bar-asset').style.width   = (assetVal/total*100).toFixed(1)+'%';
-    document.getElementById('bar-isa-w').style.width   = (isaWval/total*100).toFixed(1)+'%';
-    document.getElementById('bar-isa-h').style.width   = (isaHval/total*100).toFixed(1)+'%';
-  }
-
-  // 하단 요약
-  const totalPrincipal = PENSION_PP + ISA.wife.principal + ISA.husband.principal;
-  const totalProfit    = PENSION_PG + ISA.wife.profit    + ISA.husband.profit;
-  document.getElementById('sb-total').textContent     = fmt(total);
-  document.getElementById('sb-principal').textContent = fmt(totalPrincipal);
-  const pEl = document.getElementById('sb-profit');
-  pEl.textContent  = (totalProfit>=0?'+':'') + fmt(totalProfit);
-  pEl.className    = 'sb-val ' + (totalProfit>=0?'up':'dn');
-  const rate = totalPrincipal>0 ? (totalProfit/totalPrincipal*100) : 0;
-  const rEl  = document.getElementById('sb-rate');
-  rEl.textContent  = (rate>=0?'+':'') + rate.toFixed(2) + '%';
-  rEl.className    = 'sb-val ' + (rate>=0?'up':'dn');
+// 메인 차트
+function renderMainChart() {
+  const sliced = activeM === 999 ? DATA : DATA.slice(-activeM);
+  const ctx = document.getElementById('main-chart');
+  if (mainChart) mainChart.destroy();
+  mainChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: sliced.map(d => d.lbl),
+      datasets: [
+        {label:'연금저축', data:sliced.map(d=>d.pe), backgroundColor:'#ff709688', borderColor:'#ff7096', borderWidth:1.5, borderSkipped:false, stack:'eval', order:2},
+        {label:'개인형IRP', data:sliced.map(d=>d.ie), backgroundColor:'#ffd16688', borderColor:'#ffd166', borderWidth:1.5, borderSkipped:false, stack:'eval', order:2},
+        {label:'DC', data:sliced.map(d=>d.lbl<'2026-02'?null:d.de), backgroundColor:'#60a5fa88', borderColor:'#60a5fa', borderWidth:1.5, borderSkipped:false, stack:'eval', order:2},
+        {type:'line', label:'납입원금', data:sliced.map(d=>d.tp), borderColor:'#6878a8', borderWidth:2, borderDash:[5,4], pointRadius:0, fill:false, order:1},
+        {type:'line', label:'운용수익', data:sliced.map(d=>d.tg), borderColor:'#e74c3c',
+          segment:{borderColor:c=>c.p0.parsed.y>=0?'#e74c3c':'#1a5fa8'},
+          borderWidth:2.5, pointRadius:0, fill:false, order:0},
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      interaction:{mode:'index', intersect:false},
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y?.toLocaleString()}원`}}
+      },
+      scales:{
+        x:{stacked:true, ticks:{color:'#6878a8',font:{size:9,family:'Nanum Gothic Coding'},maxTicksLimit:20}, grid:{color:'#2d3250'}},
+        y:{stacked:false, ticks:{color:'#6878a8',font:{size:10,family:'Nanum Gothic Coding'},
+          callback:v=>v>=1e8?(v/1e8).toFixed(1)+'억':(v/1e4).toFixed(0)+'만원'}, grid:{color:'#2d325060'}}
+      }
+    }
+  });
 }
 
-loadAssets();
+// 도넛: 계좌별 비중
+function renderDonutAcct() {
+  const d = DATA[DATA.length - 1];
+  const vals = [d.pe, d.ie, d.de || 0];
+  const total = vals.reduce((a,b)=>a+b,0);
+  new Chart(document.getElementById('donut-acct'), {
+    type: 'doughnut',
+    data: {
+      labels: ['🌸 연금저축', '💛 개인형IRP', '🩵 DC'],
+      datasets: [{
+        data: vals,
+        backgroundColor: ['#ff709688','#ffd16688','#60a5fa88'],
+        borderColor: ['#ff7096','#ffd166','#60a5fa'],
+        borderWidth: 2,
+      }]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false, cutout:'62%',
+      plugins:{
+        legend:{position:'bottom', labels:{color:'#b0b8d8', font:{size:12, family:'Nanum Gothic'}, boxWidth:14, padding:14}},
+        tooltip:{callbacks:{
+          label:c=>` ${c.label}: ${c.parsed.toLocaleString()}원 (${(c.parsed/total*100).toFixed(1)}%)`
+        }}
+      }
+    }
+  });
+}
+
+// 도넛: 원금 vs 수익
+function renderDonutPnl() {
+  const d = DATA[DATA.length - 1];
+  const profitUp = d.tg >= 0;
+  new Chart(document.getElementById('donut-pnl'), {
+    type: 'doughnut',
+    data: {
+      labels: ['납입 원금', profitUp ? '운용 수익 (+)' : '운용 손실 (-)'],
+      datasets: [{
+        data: [d.tp, Math.abs(d.tg)],
+        backgroundColor: ['#6878a888', profitUp ? '#e74c3c88' : '#1a5fa888'],
+        borderColor: ['#6878a8', profitUp ? '#e74c3c' : '#1a5fa8'],
+        borderWidth: 2,
+      }]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false, cutout:'62%',
+      plugins:{
+        legend:{position:'bottom', labels:{color:'#b0b8d8', font:{size:12, family:'Nanum Gothic'}, boxWidth:14, padding:14}},
+        tooltip:{callbacks:{
+          label:c=>` ${c.label}: ${c.parsed.toLocaleString()}원`
+        }}
+      }
+    }
+  });
+}
+
+// 계좌별 개별 차트
+function makeAcctChart(canvasId, evalData, principalData, labels, color) {
+  const ctx = document.getElementById(canvasId);
+  if (!ctx) return;
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {label:'평가금액', data:evalData, borderColor:color, borderWidth:2, pointRadius:1,
+          fill:true, backgroundColor:(c)=>{
+            const g=c.chart.ctx.createLinearGradient(0,0,0,200);
+            g.addColorStop(0,color+'44'); g.addColorStop(1,color+'00'); return g;
+          }, tension:0.3},
+        {label:'납입원금', data:principalData, borderColor:'#6878a880', borderWidth:1.5, borderDash:[4,3], pointRadius:0, fill:false},
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      interaction:{mode:'index', intersect:false},
+      plugins:{legend:{display:false}, tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y?.toLocaleString()}원`}}},
+      scales:{
+        x:{ticks:{color:'#6878a8',font:{size:9,family:'Nanum Gothic Coding'},maxTicksLimit:15}, grid:{color:'#2d3250'}},
+        y:{ticks:{color:'#6878a8',font:{size:10,family:'Nanum Gothic Coding'},callback:v=>v>=1e8?(v/1e8).toFixed(1)+'억':(v/1e4).toFixed(0)+'만원'}, grid:{color:'#2d325060'}}
+      }
+    }
+  });
+}
+
+function renderAcctCharts() {
+  const labels = DATA.map(d => d.lbl);
+  makeAcctChart('chart-pension', DATA.map(d=>d.pe), DATA.map(d=>d.pp), labels, '#ff7096');
+  makeAcctChart('chart-irp', DATA.map(d=>d.ie||null), DATA.map(d=>d.ip||null), labels, '#ffd166');
+  makeAcctChart('chart-dc', DATA.map(d=>d.lbl<'2026-02'?null:d.de), DATA.map(d=>d.lbl<'2026-02'?null:d.dp), labels, '#60a5fa');
+}
+
+
+// ── 마일스톤 ──
+const MILESTONES = [
+  {lv:1,  target:10000000,   achieved:'2021-01', months:11},
+  {lv:2,  target:20000000,   achieved:'2021-12', months:11},
+  {lv:3,  target:40000000,   achieved:'2024-05', months:29},
+  {lv:4,  target:80000000,   achieved:'2025-10', months:17},
+  {lv:5,  target:160000000,  achieved:null, months:null},
+  {lv:6,  target:320000000,  achieved:null, months:null},
+  {lv:7,  target:640000000,  achieved:null, months:null},
+  {lv:8,  target:1280000000, achieved:null, months:null},
+  {lv:9,  target:2560000000, achieved:null, months:null},
+  {lv:10, target:5120000000, achieved:null, months:null},
+];
+
+const LV_COLORS = [
+  '#94a3b8','#60a5fa','#34d399','#ffd166','#fb923c',
+  '#f47272','#c084fc','#f472b6','#facc15','#e74c3c'
+];
+const LV_ICONS = ['🥉','🥈','🥇','🏅','⭐','🌟','💫','✨','👑','🔱'];
+
+function renderMilestones() {
+  const lastData = DATA[DATA.length-1];
+  const currentVal = lastData.te;
+
+  // 현재 레벨 파악
+  let currentLv = 0;
+  for (const m of MILESTONES) {
+    if (currentVal >= m.target) currentLv = m.lv;
+  }
+  const nextM = MILESTONES.find(m => m.lv === currentLv + 1);
+  const currM = MILESTONES.find(m => m.lv === currentLv);
+
+  // 뱃지
+  const badge = document.getElementById('current-level-badge');
+  if (badge) badge.textContent = currentLv > 0 ? `${LV_ICONS[currentLv-1]} Lv.${currentLv} 달성!` : 'Lv.0 시작!';
+
+  // 진행바
+  if (nextM) {
+    const fromVal = currM ? currM.target : 0;
+    const pct = Math.min(100, ((currentVal - fromVal) / (nextM.target - fromVal) * 100));
+    function fmtV(v) {
+      const uk = Math.floor(v / 1e8);
+      const man = Math.floor((v % 1e8) / 1e4);
+      if (uk === 0) return man.toLocaleString() + '만원';
+      if (man === 0) return uk.toLocaleString() + '억원';
+      return uk.toLocaleString() + '억 ' + man.toLocaleString() + '만원';
+    }
+    document.getElementById('lp-from').textContent = currM ? `Lv.${currM.lv} ${fmtV(fromVal)}` : '시작';
+    document.getElementById('lp-to').textContent = `Lv.${nextM.lv} ${fmtV(nextM.target)}`;
+    document.getElementById('lp-pct').textContent = pct.toFixed(1) + '%';
+    document.getElementById('lp-bar').style.width = pct + '%';
+    const remain = nextM.target - currentVal;
+    document.getElementById('lp-desc').textContent = `다음 레벨까지 ${fmtV(remain)} 남았어요 🚀`;
+  } else {
+    document.getElementById('lp-from').textContent = '최고 레벨 달성!';
+    document.getElementById('lp-pct').textContent = '100%';
+    document.getElementById('lp-bar').style.width = '100%';
+    document.getElementById('lp-to').textContent = '🔱 MAX';
+    document.getElementById('lp-desc').textContent = '모든 레벨을 달성했습니다! 🎊';
+  }
+
+  // 레벨 카드 그리드
+  const grid = document.getElementById('milestone-grid');
+  if (!grid) return;
+  grid.innerHTML = MILESTONES.map(m => {
+    const done = m.achieved !== null;
+    const isCurrent = m.lv === currentLv;
+    const isNext = m.lv === currentLv + 1;
+    const color = LV_COLORS[m.lv-1];
+    const icon = LV_ICONS[m.lv-1];
+    const targetStr = m.target >= 1e8 ? (m.target/1e8).toFixed(0)+'억' : (m.target/1e4).toFixed(0)+'만';
+
+    const achievedLabel = m.achieved ? m.achieved.replace('-','년 ')+'월' : '';
+    const monthsLabel = m.months ? `${m.months}개월 소요` : '';
+    function fmtTarget(v) {
+      const uk = Math.floor(v / 1e8);
+      const man = Math.floor((v % 1e8) / 1e4);
+      if (uk === 0) return man.toLocaleString() + '만원';
+      if (man === 0) return uk.toLocaleString() + '억원';
+      return uk.toLocaleString() + '억 ' + man.toLocaleString() + '만원';
+    }
+
+    return `<div style="
+      background:${done ? 'var(--bg3)' : 'var(--bg)'};
+      border:2px solid ${isCurrent ? color : done ? color+'55' : 'var(--border)'};
+      border-radius:14px;padding:16px 18px;
+      position:relative;overflow:hidden;
+      display:flex;align-items:center;gap:16px;
+      transition:all .3s;
+      ${isNext ? 'animation:pulse-border 2s infinite;' : ''}
+      opacity:${done ? '1' : '0.45'};
+    ">
+      ${isCurrent ? `<div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,${color},${color}44);"></div>` : ''}
+      ${done && isCurrent ? `<div style="position:absolute;top:0;right:0;bottom:0;width:3px;background:linear-gradient(180deg,${color},${color}44);"></div>` : ''}
+
+      <!-- 뱃지 (좌측) -->
+      <div style="
+        width:60px;height:60px;border-radius:14px;
+        background:${done ? color+'22' : 'var(--bg2)'};
+        border:2px solid ${done ? color+'66' : 'var(--border)'};
+        display:flex;flex-direction:column;align-items:center;justify-content:center;
+        flex-shrink:0;gap:2px;
+      ">
+        <div style="font-size:26px;line-height:1;">${done ? icon : '🔒'}</div>
+        <div style="font-family:var(--mono);font-size:9px;font-weight:700;color:${done?color:'var(--text3)'};">Lv.${m.lv}</div>
+      </div>
+
+      <!-- 텍스트 (우측) -->
+      <div style="flex:1;min-width:0;">
+        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:4px;">
+          <span style="font-family:var(--mono);font-size:16px;font-weight:700;color:${done?color:'var(--text3)'};">
+            ${(()=>{const u=Math.floor(m.target/1e8),w=Math.floor((m.target%1e8)/1e4);return u===0?w.toLocaleString()+'만원':w===0?u.toLocaleString()+'억원':u.toLocaleString()+'억 '+w.toLocaleString()+'만원';})()}
+          </span>
+          ${isCurrent ? `<span style="font-size:10px;background:${color};color:#12141c;padding:1px 7px;border-radius:10px;font-family:var(--mono);font-weight:700;">현재</span>` : ''}
+          ${isNext ? `<span style="font-size:10px;background:var(--bg2);color:${color};border:1px solid ${color};padding:1px 7px;border-radius:10px;font-family:var(--mono);">NEXT</span>` : ''}
+        </div>
+        ${(()=>{
+        if(!done) return `
+          <div style="font-family:var(--mono);font-size:12px;color:var(--text3);">미달성</div>
+          <div style="font-family:var(--mono);font-size:11px;color:var(--text3);margin-top:2px;">🔒 잠금</div>`;
+        // 달성 시점 데이터 찾기
+        const rec = DATA.find(d=>d.lbl===m.achieved);
+        const pPct = rec ? Math.round(rec.tp/rec.te*100) : null;
+        const gPct = rec ? Math.round(rec.tg/rec.te*100) : null;
+        const gUp  = rec ? rec.tg >= 0 : true;
+        return `
+          <div style="font-family:var(--mono);font-size:12px;color:var(--text2);">${achievedLabel} 달성</div>
+          <div style="font-family:var(--mono);font-size:11px;color:${color};margin-top:2px;">⏱ ${monthsLabel}</div>
+          ${rec ? `
+          <div style="margin-top:8px;">
+            <div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:9px;color:var(--text3);margin-bottom:3px;">
+              <span>💵 원금 ${pPct}%</span>
+              <span style="color:${gUp?'#fb923c':'#38bdf8'};">${gUp?'📈':'📉'} 수익 ${gPct}%</span>
+            </div>
+            <div style="height:6px;border-radius:3px;overflow:hidden;background:var(--border);display:flex;">
+              <div style="width:${pPct}%;background:#6878a8;border-radius:3px 0 0 3px;transition:width .8s;"></div>
+              <div style="width:${Math.abs(gPct)}%;background:${gUp?'#fb923c':'#38bdf8'};border-radius:0 3px 3px 0;transition:width .8s;"></div>
+            </div>
+          </div>` : ''}`;
+      })()}
+      </div>
+    </div>`;
+  }).join('');
+}
+renderSummary();
+renderMainChart();
+renderDonutAcct();
+renderDonutPnl();
+renderAcctCharts();
+renderMilestones();
 </script>
 </body>
 </html>
