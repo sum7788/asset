@@ -921,7 +921,9 @@ function renderTaxSection(grandTotal) {
 
   const list = document.getElementById('tax-list');
   list.innerHTML = accounts.map(a => {
-    const pct = taxTotal>0 ? (a.val/taxTotal*100).toFixed(1) : 0;
+    const pctNum = taxTotal>0 ? (a.val/taxTotal*100) : 0;
+    const pctStr = pctNum.toFixed(1);
+    const globalPct = grandTotal>0 ? (a.val/grandTotal*100).toFixed(1) : '0.0';
     return `
       <div style="background:var(--bg3);border:1px solid ${a.color}33;border-radius:10px;padding:12px 14px;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
@@ -930,9 +932,12 @@ function renderTaxSection(grandTotal) {
         </div>
         <div style="font-family:var(--mono);font-size:15px;font-weight:700;color:var(--text);margin-bottom:6px;">${fmtFull(a.val)}</div>
         <div style="height:3px;background:var(--border);border-radius:2px;overflow:hidden;">
-          <div style="height:100%;width:${pct}%;background:${a.color};border-radius:2px;transition:width 1s;"></div>
+          <div style="height:100%;width:${pctStr}%;background:${a.color};border-radius:2px;transition:width 1s;"></div>
         </div>
-        <div style="font-family:var(--mono);font-size:9px;color:${a.color};margin-top:3px;">${pct}%</div>
+        <div style="display:flex;justify-content:space-between;margin-top:4px;">
+          <span style="font-family:var(--mono);font-size:10px;color:${a.color};font-weight:700;">${pctStr}%</span>
+          <span style="font-family:var(--mono);font-size:9px;color:var(--text3);">전체 ${globalPct}%</span>
+        </div>
       </div>`;
   }).join('');
 }

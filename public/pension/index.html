@@ -134,6 +134,10 @@ footer p{font-size:11px;color:var(--text3);font-family:var(--mono);}
     <div class="acct-row"><span class="acct-key">✨ 운용 수익</span><span class="acct-val" id="ap-g">—</span></div>
     <div class="acct-row"><span class="acct-key">🎲 수익률</span><span class="acct-val" id="ap-r">—</span></div>
     <div class="acct-bar-wrap"><div class="acct-bar" id="ap-bar" style="background:var(--pension)"></div></div>
+    <div style="display:flex;justify-content:space-between;margin-top:5px;">
+      <span style="font-family:var(--mono);font-size:10px;color:var(--pension);font-weight:700;" id="ap-pct-label">—</span>
+      <span style="font-family:var(--mono);font-size:9px;color:var(--text3);">전체 연금 비중</span>
+    </div>
   </div>
   <div class="acct-card">
     <div class="acct-name"><span>💛 개인형 IRP</span><span class="acct-dur" id="dur-irp"></span></div>
@@ -142,6 +146,10 @@ footer p{font-size:11px;color:var(--text3);font-family:var(--mono);}
     <div class="acct-row"><span class="acct-key">✨ 운용 수익</span><span class="acct-val" id="ai-g">—</span></div>
     <div class="acct-row"><span class="acct-key">🎲 수익률</span><span class="acct-val" id="ai-r">—</span></div>
     <div class="acct-bar-wrap"><div class="acct-bar" id="ai-bar" style="background:var(--irp)"></div></div>
+    <div style="display:flex;justify-content:space-between;margin-top:5px;">
+      <span style="font-family:var(--mono);font-size:10px;color:var(--irp);font-weight:700;" id="ai-pct-label">—</span>
+      <span style="font-family:var(--mono);font-size:9px;color:var(--text3);">전체 연금 비중</span>
+    </div>
   </div>
   <div class="acct-card">
     <div class="acct-name"><span>🩵 DC</span><span class="acct-dur" id="dur-dc"></span></div>
@@ -150,6 +158,10 @@ footer p{font-size:11px;color:var(--text3);font-family:var(--mono);}
     <div class="acct-row"><span class="acct-key">✨ 운용 수익</span><span class="acct-val" id="ad-g">—</span></div>
     <div class="acct-row"><span class="acct-key">🎲 수익률</span><span class="acct-val" id="ad-r">—</span></div>
     <div class="acct-bar-wrap"><div class="acct-bar" id="ad-bar" style="background:var(--dc)"></div></div>
+    <div style="display:flex;justify-content:space-between;margin-top:5px;">
+      <span style="font-family:var(--mono);font-size:10px;color:var(--dc);font-weight:700;" id="ad-pct-label">—</span>
+      <span style="font-family:var(--mono);font-size:9px;color:var(--text3);">전체 연금 비중</span>
+    </div>
   </div>
 </div>
 
@@ -407,8 +419,12 @@ function renderSummary() {
     gEl.textContent = (a.g >= 0 ? '+' : '') + a.g.toLocaleString() + '원';
     gEl.className = 'acct-val ' + (a.g >= 0 ? 'up' : 'dn');
     document.getElementById(a.pre + '-r').textContent = fmtPct(a.g, a.p);
+    const pctNum = totalE > 0 ? (a.e / totalE * 100) : 0;
     const bar = document.getElementById(a.pre + '-bar');
-    bar.style.width = (totalE > 0 ? (a.e / totalE * 100) : 0) + '%';
+    bar.style.width = pctNum.toFixed(1) + '%';
+    // % 라벨 업데이트
+    const pctLabel = document.getElementById(a.pre + '-pct-label');
+    if(pctLabel) pctLabel.textContent = pctNum.toFixed(1) + '%';
   });
 }
 
