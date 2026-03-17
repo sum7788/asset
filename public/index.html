@@ -171,6 +171,7 @@ footer p{font-size:10px;color:var(--text3);font-family:var(--mono);}
     </div>
   </div>
   <div class="hdr-r">
+    <a href="./snapshot.html" style="font-family:var(--mono);font-size:10px;color:#ffd166;background:rgba(255,209,102,.1);border:1px solid rgba(255,209,102,.3);padding:5px 12px;border-radius:8px;text-decoration:none;transition:all .15s;" onmouseover="this.style.borderColor='#ffd166'" onmouseout="this.style.borderColor='rgba(255,209,102,.3)'">📸 잔액 스냅샷</a>
     <div class="live"><div class="ldot"></div>LIVE</div>
     <div class="ts" id="clock"></div>
   </div>
@@ -311,6 +312,110 @@ footer p{font-size:10px;color:var(--text3);font-family:var(--mono);}
       </a>
     </div>
   </div>
+  <!-- 총자산 추이 -->
+  <div class="sec" id="history-sec" style="display:none;">
+    <div class="sec-hdr"><span>📈</span><span class="sec-title">총자산 추이</span><div class="sec-line"></div></div>
+    <div class="card">
+      <div class="card-hdr">
+        <div><div class="card-title">📊 월별 총자산 변화</div><div class="card-sub">매월 말 스냅샷 기록</div></div>
+      </div>
+      <div class="chart-wrap" style="padding:20px;">
+        <div style="height:300px;position:relative;"><canvas id="history-chart"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 마켓 지표 티커 바 ── -->
+  <div id="ticker-bar" style="
+    background:var(--bg2);border:1px solid var(--border);border-radius:12px;
+    padding:10px 20px;margin-bottom:28px;
+    display:flex;align-items:center;gap:24px;flex-wrap:wrap;
+  ">
+    <div style="font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;flex-shrink:0;">📡 마켓</div>
+    <div style="display:flex;align-items:center;gap:6px;">
+      <span style="font-family:var(--mono);font-size:10px;color:var(--text3);">나스닥100</span>
+      <span id="mkt-qqq" style="font-family:var(--mono);font-size:13px;font-weight:700;">—</span>
+      <span id="mkt-qqq-chg" style="font-family:var(--mono);font-size:10px;">—</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:6px;">
+      <span style="font-family:var(--mono);font-size:10px;color:var(--text3);">TSLA</span>
+      <span id="mkt-tsla" style="font-family:var(--mono);font-size:13px;font-weight:700;">—</span>
+      <span id="mkt-tsla-chg" style="font-family:var(--mono);font-size:10px;">—</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:6px;">
+      <span style="font-family:var(--mono);font-size:10px;color:var(--text3);">USD/KRW</span>
+      <span id="mkt-fx" style="font-family:var(--mono);font-size:13px;font-weight:700;">—</span>
+    </div>
+    <div style="margin-left:auto;font-family:var(--mono);font-size:9px;color:var(--text3);" id="mkt-time">—</div>
+  </div>
+
+  <!-- ── 10억 달성 게이지 ── -->
+  <div class="sec">
+    <div class="sec-hdr"><span>🎯</span><span class="sec-title">마일스톤 · 10억 달성 게이지</span><div class="sec-line"></div></div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:24px 28px;">
+      <!-- 현재 vs 목표 -->
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:14px;">
+        <div>
+          <div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-bottom:4px;">현재 총자산</div>
+          <div style="font-family:var(--mono);font-size:28px;font-weight:700;" id="ms-current">—</div>
+        </div>
+        <div style="text-align:center;">
+          <div style="font-family:var(--mono);font-size:32px;" id="ms-pct-big">—</div>
+          <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">달성률</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-bottom:4px;">목표 · 🏆 10억</div>
+          <div style="font-family:var(--mono);font-size:28px;font-weight:700;color:var(--text3);">10억원</div>
+        </div>
+      </div>
+      <!-- 메인 게이지 -->
+      <div style="height:20px;background:var(--bg3);border-radius:10px;overflow:hidden;border:1px solid var(--border);margin-bottom:8px;position:relative;">
+        <div id="ms-bar" style="height:100%;border-radius:10px;background:linear-gradient(90deg,#ff7096,#ffd166,#4ade80);transition:width 1.2s cubic-bezier(.4,0,.2,1);width:0%;"></div>
+        <!-- 억 단위 구분선 -->
+        <div style="position:absolute;inset:0;display:flex;">
+          ${[1,2,3,4,5,6,7,8,9].map(i=>`<div style="flex:1;border-right:1px solid rgba(255,255,255,.15);"></div>`).join('')}
+          <div style="flex:1;"></div>
+        </div>
+      </div>
+      <!-- 억 단위 레이블 -->
+      <div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:9px;color:var(--text3);margin-bottom:16px;padding:0 1px;">
+        ${[0,1,2,3,4,5,6,7,8,9,10].map(i=>`<span>${i}억</span>`).join('')}
+      </div>
+      <!-- 남은 금액 & 1억 단위 다음 마일스톤 -->
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px 16px;flex:1;min-width:140px;">
+          <div style="font-family:var(--mono);font-size:9px;color:var(--text3);margin-bottom:4px;">🚀 다음 1억 단위까지</div>
+          <div style="font-family:var(--mono);font-size:16px;font-weight:700;color:var(--up);" id="ms-next1">—</div>
+        </div>
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px 16px;flex:1;min-width:140px;">
+          <div style="font-family:var(--mono);font-size:9px;color:var(--text3);margin-bottom:4px;">🏆 10억까지 남은 금액</div>
+          <div style="font-family:var(--mono);font-size:16px;font-weight:700;color:#ffd166;" id="ms-remain">—</div>
+        </div>
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px 16px;flex:1;min-width:140px;">
+          <div style="font-family:var(--mono);font-size:9px;color:var(--text3);margin-bottom:4px;">📅 기준일</div>
+          <div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--text2);" id="ms-date">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 1억 단위 마일스톤 타임라인 ── -->
+  <div class="sec">
+    <div class="sec-hdr"><span>⏱️</span><span class="sec-title">1억 단위 달성 타임라인</span><div class="sec-line"></div></div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:20px;">
+      <div id="milestone-timeline" style="display:flex;flex-direction:column;gap:8px;"></div>
+    </div>
+  </div>
+
+  <!-- ── 자산배분 히트맵 ── -->
+  <div class="sec">
+    <div class="sec-hdr"><span>🗺️</span><span class="sec-title">자산배분 히트맵</span><div class="sec-line"></div></div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:20px;">
+      <div id="heatmap" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:6px;"></div>
+    </div>
+  </div>
+
+
 </main>
 
 <footer>
@@ -378,6 +483,27 @@ async function fetchUSDKRW(){
 }
 updateClock(); setInterval(()=>updateClock(),1000);
 
+
+// ── 월별 자산 스냅샷 히스토리 ──
+// 매월 Claude에게 잔액 알려주면 여기에 한 줄씩 추가됩니다
+// 컬럼: date, total, domestic, us, pension, isa, limited, children, dad, mom, watermelon, grapefruit
+const HISTORY = [
+  // date       total       dom         us          pension     isa         limited     children    dad         mom         wm          gf
+  // 2026-03-17: 첫 스냅샷 (미국주식은 당일 종가 기준 추후 업데이트)
+  {date:'2026-03',total:null,dom:117335953,us:null,pension:98651170,isa:59891205,limited:null,children:null,
+   dad:null,mom:null,watermelon:null,grapefruit:null,memo:'초기 등록 · 미국/한정/자녀 미국 실시간 미포함'},
+];
+
+// 히스토리에서 실시간 계산값 병합 (가장 최근 항목)
+function mergeLatestSnapshot(vals){
+  if(!HISTORY.length) return;
+  const last = HISTORY[HISTORY.length-1];
+  // null인 항목은 실시간 계산값으로 채움
+  Object.keys(vals).forEach(k=>{
+    if(last[k]===null && vals[k]!=null) last[k]=vals[k];
+  });
+}
+
 // ── 고정 데이터 (수동 업데이트) ──
 const FIXED = {
   // 국내주식 (평가잔액 고정)
@@ -417,6 +543,48 @@ function calcPortVal(holdings, prices, usdkrw){
     const p=prices[t];
     return s+(p?p*q*usdkrw:0);
   },0);
+}
+
+
+// ── 히스토리 차트 ──
+function renderHistoryChart(){
+  const validRows = HISTORY.filter(h=>h.total!=null);
+  if(validRows.length < 2){
+    document.getElementById('history-sec').style.display='none';
+    return;
+  }
+  document.getElementById('history-sec').style.display='block';
+  const labels = validRows.map(h=>h.date);
+  const totals = validRows.map(h=>h.total);
+  new Chart(document.getElementById('history-chart'),{
+    type:'line',
+    data:{
+      labels,
+      datasets:[
+        {label:'총자산',data:totals,borderColor:'#eef0ff',borderWidth:2.5,pointRadius:4,
+         pointBackgroundColor:'#eef0ff',fill:true,
+         backgroundColor:(c)=>{const g=c.chart.ctx.createLinearGradient(0,0,0,280);
+           g.addColorStop(0,'#eef0ff22');g.addColorStop(1,'#eef0ff00');return g;},tension:0.3},
+        {label:'국내주식',data:validRows.map(h=>h.dom),borderColor:'#60a5fa',borderWidth:1.5,pointRadius:3,fill:false,tension:0.3},
+        {label:'미국주식',data:validRows.map(h=>h.us),borderColor:'#f97316',borderWidth:1.5,pointRadius:3,fill:false,tension:0.3},
+        {label:'연금',data:validRows.map(h=>h.pension),borderColor:'#ff7096',borderWidth:1.5,pointRadius:3,fill:false,tension:0.3},
+        {label:'ISA',data:validRows.map(h=>h.isa),borderColor:'#34d399',borderWidth:1.5,pointRadius:3,fill:false,tension:0.3},
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{position:'bottom',labels:{color:'#9aa0c0',font:{size:11,family:'Nanum Gothic'},boxWidth:12,padding:12}},
+        tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${fmtW(c.parsed.y)}`}}
+      },
+      scales:{
+        x:{ticks:{color:'#555e88',font:{size:10,family:'Nanum Gothic Coding'}},grid:{color:'#252a40'}},
+        y:{ticks:{color:'#555e88',font:{size:10,family:'Nanum Gothic Coding'},
+          callback:v=>v>=1e8?(v/1e8).toFixed(1)+'억':(v/1e4).toFixed(0)+'만원'},grid:{color:'#252a4060'}}
+      }
+    }
+  });
 }
 
 async function loadAll(){
@@ -536,6 +704,171 @@ async function loadAll(){
   document.getElementById('fi-gf-dom').textContent=fmtW(FIXED.gf_dom_e);
 
   document.getElementById('last-upd').textContent='마지막 업데이트: '+new Date().toLocaleTimeString('ko-KR',{timeZone:'Asia/Seoul',hour12:false});
+
+  // 마일스톤 게이지
+  renderMilestoneGauge(total);
+  // 히트맵
+  renderHeatmap({dom:dom_val,us:us_val,pen:pen_val,isa:isa_val,lim:lim_val,kid:kid_val},
+    {dom_dad:FIXED.dom_dad,dom_mom:FIXED.dom_mom,
+     us_dad:us_dad_val,us_mom:us_mom_val,
+     pen:FIXED.pen_total,isa_dad:FIXED.isa_dad_e,isa_mom:FIXED.isa_mom_e,
+     lim:lim_val,kid_wm:wm_val,kid_gf:gf_val});
+  // 마켓 지표
+  loadMarket(usdkrw);
+
+  // 실시간 계산값을 히스토리 최신 항목에 병합 후 차트 렌더
+  mergeLatestSnapshot({
+    total, dom:dom_val, us:us_val, pension:pen_val,
+    isa:isa_val, limited:lim_val, children:kid_val,
+    dad:dad_val, mom:mom_val, watermelon:wm_val, grapefruit:gf_val
+  });
+  renderHistoryChart();
+}
+
+
+// ── 1억 단위 마일스톤 기록 ──
+// 형식: {label, date, total} - 매달 스냅샷에서 누적
+const BILLION_MILESTONES = [
+  // 현재 7.18억 → 8억부터 기록 시작
+  // 예시 (달성 시 Claude에게 알려주시면 추가해드립니다):
+  // {label:'7억 → 8억', achieved:null, days:null},
+];
+
+// 현재 총자산 기준으로 게이지 렌더
+function renderMilestoneGauge(total) {
+  const TARGET = 1000000000; // 10억
+  const START  = 718000000;  // 시작 기준 (3/17 현재 7.18억)
+  const pct = Math.min(100, total / TARGET * 100);
+
+  document.getElementById('ms-current').textContent = fmtFull(total);
+  document.getElementById('ms-pct-big').textContent = pct.toFixed(1) + '%';
+  document.getElementById('ms-bar').style.width = pct + '%';
+
+  // 다음 1억 단위
+  const nextBillion = Math.ceil(total / 1e8) * 1e8;
+  const toNext = nextBillion - total;
+  document.getElementById('ms-next1').textContent =
+    fmtFull(toNext) + ' (→' + (nextBillion/1e8).toFixed(0) + '억)';
+
+  // 10억까지
+  document.getElementById('ms-remain').textContent = fmtFull(TARGET - total);
+
+  // 날짜
+  document.getElementById('ms-date').textContent =
+    new Date().toLocaleDateString('ko-KR',{timeZone:'Asia/Seoul',month:'long',day:'numeric'});
+
+  // 타임라인 렌더
+  renderTimeline(total);
+}
+
+function renderTimeline(current) {
+  const el = document.getElementById('milestone-timeline');
+  const steps = [8,9,10]; // 8억, 9억, 10억
+  const START_VAL = 718000000; // 시작
+
+  // 달성된 것 + 미달성
+  const rows = steps.map((b, i) => {
+    const target = b * 1e8;
+    const achieved = current >= target;
+    const isNext   = !achieved && (i===0 || current >= steps[i-1]*1e8);
+    const remain   = achieved ? 0 : target - current;
+    const pct      = Math.min(100, current / target * 100);
+
+    const color = achieved ? '#4ade80' : isNext ? '#ffd166' : 'var(--text3)';
+    const icon  = achieved ? '✅' : isNext ? '🎯' : '🔒';
+    const label = achieved
+      ? `<span style="color:#4ade80;font-size:10px;">달성!</span>`
+      : isNext
+      ? `<span style="color:#ffd166;font-size:10px;">${fmtFull(remain)} 남음</span>`
+      : `<span style="color:var(--text3);font-size:10px;">미달성</span>`;
+
+    return `
+      <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;
+        background:${achieved?'rgba(74,222,128,.05)':isNext?'rgba(255,209,102,.05)':'var(--bg)'};
+        border:1px solid ${achieved?'rgba(74,222,128,.2)':isNext?'rgba(255,209,102,.2)':'var(--border)'};
+        border-radius:10px;">
+        <span style="font-size:18px;flex-shrink:0;">${icon}</span>
+        <div style="flex:1;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
+            <span style="font-family:var(--mono);font-size:13px;font-weight:700;color:${color};">${b}억원</span>
+            ${label}
+          </div>
+          <div style="height:4px;background:var(--border);border-radius:2px;overflow:hidden;">
+            <div style="height:100%;width:${pct.toFixed(1)}%;background:${color};border-radius:2px;transition:width 1s;"></div>
+          </div>
+        </div>
+      </div>`;
+  });
+  el.innerHTML = rows.join('');
+}
+
+// ── 자산배분 히트맵 ──
+function renderHeatmap(cats, accounts) {
+  const total = Object.values(cats).reduce((a,b)=>a+b,0);
+  const items = [
+    {label:'👨국내주식',  val:accounts.dom_dad,  color:'#60a5fa', cat:'국내'},
+    {label:'👩국내주식',  val:accounts.dom_mom,  color:'#3b82f6', cat:'국내'},
+    {label:'👨미국주식',  val:accounts.us_dad,   color:'#f97316', cat:'미국'},
+    {label:'👩미국주식',  val:accounts.us_mom,   color:'#fb923c', cat:'미국'},
+    {label:'🌱연금저축', val:accounts.pen*0.785, color:'#ff7096', cat:'연금'},  // 약 비중
+    {label:'💛IRP',      val:accounts.pen*0.185, color:'#ffd166', cat:'연금'},
+    {label:'🩵DC',       val:accounts.pen*0.03,  color:'#60a5fa', cat:'연금'},
+    {label:'👨ISA',      val:accounts.isa_dad,   color:'#34d399', cat:'ISA'},
+    {label:'👩ISA',      val:accounts.isa_mom,   color:'#10b981', cat:'ISA'},
+    {label:'✨가상+금',  val:accounts.lim,       color:'#ffd166', cat:'한정'},
+    {label:'🍉수박',     val:accounts.kid_wm,    color:'#c084fc', cat:'자녀'},
+    {label:'🍊자몽',     val:accounts.kid_gf,    color:'#a855f7', cat:'자녀'},
+  ].filter(i=>i.val>0).sort((a,b)=>b.val-a.val);
+
+  const el = document.getElementById('heatmap');
+  el.innerHTML = items.map(item => {
+    const pct = total>0 ? (item.val/total*100) : 0;
+    // 비중에 따라 글씨 크기 조절
+    const fontSize = pct > 15 ? '13px' : pct > 8 ? '11px' : '10px';
+    const padding  = pct > 15 ? '16px' : '10px';
+    return `
+      <div style="
+        background:${item.color}18;
+        border:1px solid ${item.color}44;
+        border-radius:10px;padding:${padding};
+        position:relative;overflow:hidden;
+        min-height:${Math.max(60, pct*6)}px;
+        display:flex;flex-direction:column;justify-content:space-between;
+        transition:all .2s;
+      " onmouseover="this.style.borderColor='${item.color}'" onmouseout="this.style.borderColor='${item.color}44'">
+        <div style="position:absolute;inset:0;background:${item.color};opacity:${Math.min(0.15,pct/100)};border-radius:10px;"></div>
+        <div style="position:relative;">
+          <div style="font-size:${fontSize};font-weight:700;color:${item.color};margin-bottom:2px;">${item.label}</div>
+          <div style="font-family:var(--mono);font-size:${fontSize};font-weight:700;color:var(--text);">${fmtW(item.val)}</div>
+        </div>
+        <div style="position:relative;font-family:var(--mono);font-size:11px;color:${item.color};font-weight:700;margin-top:4px;">${pct.toFixed(1)}%</div>
+      </div>`;
+  }).join('');
+}
+
+// ── 마켓 지표 ──
+async function loadMarket(usdkrw) {
+  // QQQ, TSLA 시세 가져오기 (이미 prices에 있을 수도 있음)
+  try {
+    const [qqqData, tslaData] = await Promise.all([
+      fetchYahoo('QQQ','5d'),
+      fetchYahoo('TSLA','5d'),
+    ]);
+    if(qqqData) {
+      document.getElementById('mkt-qqq').textContent = '$'+qqqData.toFixed(2);
+      document.getElementById('mkt-qqq').style.color = '#f97316';
+    }
+    if(tslaData) {
+      document.getElementById('mkt-tsla').textContent = '$'+tslaData.toFixed(2);
+      document.getElementById('mkt-tsla').style.color = '#ef4444';
+    }
+  } catch {}
+  if(usdkrw) {
+    document.getElementById('mkt-fx').textContent = Math.round(usdkrw).toLocaleString()+'원';
+    document.getElementById('mkt-fx').style.color = '#60a5fa';
+  }
+  document.getElementById('mkt-time').textContent =
+    new Date().toLocaleTimeString('ko-KR',{timeZone:'Asia/Seoul',hour12:false});
 }
 
 loadAll();
