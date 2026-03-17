@@ -4,7 +4,7 @@
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>🏠 수미숨 가족 총자산</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&family=Nanum+Gothic+Coding&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700&family=Nanum+Gothic+Coding:wght@400;700&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#0d0f17;--bg2:#131620;--bg3:#1a1e2e;
@@ -30,7 +30,7 @@ header{position:relative;z-index:10;padding:18px 36px;border-bottom:1px solid va
   display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
 .logo{display:flex;align-items:center;gap:12px;}
 .logo img{height:40px;width:auto;}
-.logo-text h1{font-size:17px;font-weight:800;letter-spacing:-.03em;}
+.logo-text h1{font-size:17px;font-weight:700;letter-spacing:-.03em;}
 .logo-text p{font-size:10px;color:var(--text2);font-family:var(--mono);margin-top:1px;}
 .hdr-r{display:flex;align-items:center;gap:10px;}
 .back-btn{font-family:var(--mono);font-size:10px;color:var(--text2);background:var(--bg3);
@@ -47,7 +47,7 @@ main{position:relative;z-index:5;max-width:1300px;margin:0 auto;padding:28px 36p
 .card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;overflow:hidden;transition:border-color .2s;}
 .card:hover{border-color:var(--border2);}
 .card-hdr{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
-.card-title{font-size:14px;font-weight:800;letter-spacing:-.02em;}
+.card-title{font-size:14px;font-weight:700;letter-spacing:-.02em;}
 .card-sub{font-size:11px;color:var(--text2);font-family:var(--mono);margin-top:2px;}
 .chart-wrap{padding:20px;}
 
@@ -78,7 +78,7 @@ main{position:relative;z-index:5;max-width:1300px;margin:0 auto;padding:28px 36p
 .tbl th.r{text-align:right;}.tbl td{padding:9px 14px;font-size:12px;border-bottom:1px solid var(--border);}
 .tbl tr:last-child td{border-bottom:none;}.tbl tr:hover td{background:rgba(255,255,255,.02);}
 .tbl td.r{text-align:right;font-family:var(--mono);font-size:11px;}
-.tbl-total td{background:var(--bg3)!important;font-weight:800;}
+.tbl-total td{background:var(--bg3)!important;font-weight:700;}
 .dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:6px;flex-shrink:0;}
 
 /* 비중 바 */
@@ -104,7 +104,7 @@ footer p{font-size:10px;color:var(--text3);font-family:var(--mono);}
 <style>
 .hero{text-align:center;padding:48px 0 40px;animation:fadeUp .8s ease both;}
 .hero-badge{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--text3);margin-bottom:12px;}
-.hero-val{font-size:52px;font-weight:800;letter-spacing:-.04em;
+.hero-val{font-size:52px;font-weight:700;letter-spacing:-.04em;
   background:linear-gradient(135deg,#eef0ff,#9aa0c0);
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px;}
 .hero-sub{font-family:var(--mono);font-size:12px;color:var(--text3);}
@@ -119,7 +119,7 @@ footer p{font-size:10px;color:var(--text3);font-family:var(--mono);}
 .fam-card:hover{transform:translateY(-3px);}
 .fam-glow{position:absolute;top:-50px;right:-50px;width:150px;height:150px;border-radius:50%;opacity:.07;filter:blur(40px);pointer-events:none;}
 .fam-icon{font-size:34px;margin-bottom:10px;}
-.fam-name{font-size:16px;font-weight:800;margin-bottom:6px;}
+.fam-name{font-size:16px;font-weight:700;margin-bottom:6px;}
 .fam-val{font-family:var(--mono);font-size:28px;font-weight:700;margin-bottom:4px;}
 .fam-sub{font-family:var(--mono);font-size:10px;color:var(--text3);margin-bottom:14px;}
 .fam-items{display:flex;flex-direction:column;gap:5px;padding-top:12px;border-top:1px solid var(--border);}
@@ -139,7 +139,7 @@ footer p{font-size:10px;color:var(--text3);font-family:var(--mono);}
 .cat-card:hover::before{opacity:1;}
 .cat-glow{position:absolute;top:-40px;right:-40px;width:120px;height:120px;border-radius:50%;opacity:.07;filter:blur(30px);pointer-events:none;}
 .cat-icon{font-size:26px;margin-bottom:10px;}
-.cat-name{font-size:14px;font-weight:800;margin-bottom:4px;}
+.cat-name{font-size:14px;font-weight:700;margin-bottom:4px;}
 .cat-tag{font-family:var(--mono);font-size:9px;background:var(--bg3);border:1px solid var(--border);
   color:var(--text3);padding:2px 7px;border-radius:8px;display:inline-block;margin-bottom:10px;}
 .cat-val{font-family:var(--mono);font-size:22px;font-weight:700;margin-bottom:4px;}
@@ -548,8 +548,11 @@ const FIXED = {
   // 국내주식 (평가잔액 고정)
   dom_dad: 78499030,
   dom_mom: 38836923,
-  // 연금 (pension-v18 마지막 월 기준)
-  pen_total: 98651170,
+  // 연금 (pension-v18 마지막 월 기준, 2026-02)
+  pen_total:   98651170,
+  pen_pension: 77498812,  // 연금저축 평가
+  pen_irp:     18281857,  // 개인형IRP 평가
+  pen_dc:       2870501,  // DC 평가
   pen_pp: 66041010, pen_pg: 32610160,
   // ISA
   isa_dad_p: 38000000, isa_dad_e: 45605304,
@@ -921,18 +924,19 @@ function renderTaxSection(grandTotal) {
 
   const list = document.getElementById('tax-list');
   list.innerHTML = accounts.map(a => {
-    const pctNum = taxTotal>0 ? (a.val/taxTotal*100) : 0;
+    const aVal = (a.val && !isNaN(a.val)) ? a.val : 0;
+    const pctNum = (taxTotal>0 && aVal>0) ? (aVal/taxTotal*100) : 0;
     const pctStr = pctNum.toFixed(1);
-    const globalPct = grandTotal>0 ? (a.val/grandTotal*100).toFixed(1) : '0.0';
+    const globalPct = (grandTotal>0 && aVal>0) ? (aVal/grandTotal*100).toFixed(1) : '0.0';
     return `
       <div style="background:var(--bg3);border:1px solid ${a.color}33;border-radius:10px;padding:12px 14px;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
           <span style="font-size:12px;font-weight:700;color:${a.color};">${a.label}</span>
           <span style="font-family:var(--mono);font-size:9px;color:var(--text3);">${a.note}</span>
         </div>
-        <div style="font-family:var(--mono);font-size:15px;font-weight:700;color:var(--text);margin-bottom:6px;">${fmtFull(a.val)}</div>
+        <div style="font-family:var(--mono);font-size:15px;font-weight:700;color:var(--text);margin-bottom:6px;">${aVal>0 ? fmtFull(aVal) : "—"}</div>
         <div style="height:3px;background:var(--border);border-radius:2px;overflow:hidden;">
-          <div style="height:100%;width:${pctStr}%;background:${a.color};border-radius:2px;transition:width 1s;"></div>
+          <div style="height:100%;width:${aVal>0?pctStr:0}%;background:${a.color};border-radius:2px;transition:width 1s;"></div>
         </div>
         <div style="display:flex;justify-content:space-between;margin-top:4px;">
           <span style="font-family:var(--mono);font-size:10px;color:${a.color};font-weight:700;">${pctStr}%</span>
